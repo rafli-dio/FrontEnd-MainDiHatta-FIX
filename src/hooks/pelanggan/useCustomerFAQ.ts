@@ -13,12 +13,20 @@ export function useCustomerFAQ() {
         setLoading(true);
         try {
             const response = await axios.get('/api/faq');
-            const activeFAQs = (response.data?.data || response.data || []).filter((faq: FAQ) => faq.is_aktif);
-            const sorted = activeFAQs.sort((a: FAQ, b: FAQ) => (a.urutan || 0) - (b.urutan || 0));
-            setFaqs(sorted);
+            
+            // 1. Validasi Array (Defensive)
+            const rawData = response.data?.data || response.data;
+            const safeData = Array.isArray(rawData) ? rawData : [];
+
+            // 2. Filter Aktif & Sort (Safe Access)
+            const activeAndSorted = safeData
+                .filter((faq: any) => faq && faq.is_aktif) // Pastikan faq tidak null
+                .sort((a: any, b: any) => (a.urutan || 0) - (b.urutan || 0));
+
+            setFaqs(activeAndSorted);
         } catch (error) {
             console.error('Error fetching FAQs:', error);
-            setFaqs([]);
+            setFaqs([]); // Reset ke array kosong jika error
         } finally {
             setLoading(false);
         }
@@ -28,14 +36,26 @@ export function useCustomerFAQ() {
         fetchFAQs();
     }, [fetchFAQs]);
 
-    const filteredFAQs = faqs.filter(faq =>
-        faq.pertanyaan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        faq.jawaban.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // 3. Logic Filter Search (Defensive String)
+    // Pastikan faqs array
+    const safeFaqs = Array.isArray(faqs) ? faqs : [];
+
+    const filteredFAQs = safeFaqs.filter(faq => {
+        // Safety check: jika item faq null
+        if (!faq) return false;
+
+        const query = searchQuery.toLowerCase();
+        
+        // Gunakan (str || '') untuk mencegah crash jika data di DB null
+        const question = (faq.pertanyaan || '').toLowerCase();
+        const answer = (faq.jawaban || '').toLowerCase();
+
+        return question.includes(query) || answer.includes(query);
+    });
 
     return {
         faqs: filteredFAQs,
-        allFAQs: faqs,
+        allFAQs: safeFaqs, // Gunakan safeFaqs
         loading,
         searchQuery,
         setSearchQuery,

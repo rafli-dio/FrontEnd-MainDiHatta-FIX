@@ -43,8 +43,10 @@ export function useBookingWizard() {
         bukti_pembayaran: null as File | null,
     });
 
+    // --- 1. INITIAL FETCH (DEFENSIVE) ---
     useEffect(() => {
         const initData = async () => {
+            // Auto-fill form jika user login
             if (user) {
                 setFormData(prev => ({
                     ...prev,
@@ -56,9 +58,21 @@ export function useBookingWizard() {
             }
 
             try {
-                const resLap = await axios.get('/api/lapangans');
-                const lapData = resLap.data?.data || resLap.data;
-                
+                // Fetch All Data
+                const [resLap, resPay, resBook] = await Promise.all([
+                    axios.get('/api/lapangans'),
+                    axios.get('/api/paymentMethods'),
+                    axios.get('/api/bookings')
+                ]);
+
+                // --- Helper Safe Array ---
+                const getSafeArray = (res: any) => {
+                    const data = res.data?.data || res.data;
+                    return Array.isArray(data) ? data : [];
+                };
+
+                // 1. Lapangan Logic
+                const lapData = getSafeArray(resLap);
                 if (lapData.length > 0) {
                     const lap = lapData[0]; 
                     setLapanganId(lap.id);
@@ -72,15 +86,16 @@ export function useBookingWizard() {
                     }
                 }
 
-                const resPay = await axios.get('/api/paymentMethods');
-                const payData = resPay.data?.data || resPay.data;
-                setPaymentMethods(payData.filter((p: any) => p.is_aktif));
+                // 2. Payment Methods Logic
+                const payData = getSafeArray(resPay);
+                setPaymentMethods(payData.filter((p: any) => p?.is_aktif));
 
-                const resBook = await axios.get('/api/bookings');
-                const bookData = resBook.data?.data || resBook.data;
+                // 3. Bookings Logic
+                const bookData = getSafeArray(resBook);
                 
+                // Safe filtering booked dates
                 const dates = bookData
-                    .filter((b: Booking) => b.status_booking_id !== 4)
+                    .filter((b: Booking) => b?.status_booking_id !== 4 && b?.tanggal_booking)
                     .map((b: Booking) => new Date(b.tanggal_booking));
                 
                 setBookedDates(dates);
@@ -88,23 +103,28 @@ export function useBookingWizard() {
 
             } catch (error: any) {
                 console.error("Gagal memuat data:", error);
-                toast.error("Gagal memuat data booking.");
+                toast.error("Gagal memuat data booking. Silakan refresh.");
+                // Reset state agar aman
+                setBookedDates([]);
+                setBookings([]);
             }
         };
+        
         initData();
     }, [user, urlDate]); 
 
-    // --- 3. Helpers ---
+    // --- 3. Helpers (Safe Access) ---
     const getJamSelesai = () => {
         if (!formData.jam_mulai) return '--:--';
         const [hours, minutes] = formData.jam_mulai.split(':').map(Number);
         const endHours = hours + Number(formData.durasi_jam);
         
-        return `${String(endHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        return `${String(endHours).padStart(2, '0')}:${String(minutes || 0).padStart(2, '0')}`;
     };
 
     const totalHarga = Number(formData.durasi_jam) * hargaPerJam;
 
+    // Cek Bentrok (Safe)
     const checkConflict = () => {
         if (!formData.tanggal_booking || !formData.jam_mulai) return false;
 
@@ -112,7 +132,12 @@ export function useBookingWizard() {
         const selectedStart = parseInt(formData.jam_mulai.split(':')[0]);
         const selectedEnd = selectedStart + parseInt(formData.durasi_jam);
 
-        return bookings.some(booking => {
+        const safeBookings = Array.isArray(bookings) ? bookings : [];
+
+        return safeBookings.some(booking => {
+            // Safety Check
+            if (!booking || !booking.tanggal_booking || !booking.jam_mulai) return false;
+
             if (booking.tanggal_booking !== dateStr || booking.status_booking_id === 4) return false;
 
             const existingStart = parseInt(booking.jam_mulai.split(':')[0]);

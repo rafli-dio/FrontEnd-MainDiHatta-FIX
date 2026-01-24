@@ -1,5 +1,7 @@
 'use client';
 
+// 1. Tambahkan import Suspense dari 'react'
+import { Suspense } from 'react'; 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -20,7 +22,10 @@ export default function AdminCreateBookingPage() {
                 </div>
             </div>
 
-            <CreateBookingForm />
+            {/* 2. Bungkus komponen form dengan Suspense */}
+            <Suspense fallback={<div>Memuat Form...</div>}>
+                <CreateBookingForm />
+            </Suspense>
         </div>
     );
 }

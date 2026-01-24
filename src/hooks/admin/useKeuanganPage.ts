@@ -15,7 +15,7 @@ export interface Transaksi {
     id: number;
     tanggal_transaksi: string;
     keterangan: string;
-    debit: number;  
+    debit: number;   
     kredit: number; 
     jenis_transaksi: JenisTransaksi;
 }
@@ -38,15 +38,27 @@ export function useKeuanganPage() {
     const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth.toString());
     const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
 
-    // 1. Fetch Data
+    // 1. Fetch Data (Defensive)
     const fetchLaporan = async () => {
         setLoading(true);
         try {
             const response = await axios.get('/api/laporan/jurnal');
-            setLaporan(response.data?.data || response.data);
+            
+            // Validasi Data Response
+            const rawData = response.data?.data || response.data;
+            if (rawData) {
+                // Pastikan detail_jurnal adalah array
+                setLaporan({
+                    ...rawData,
+                    detail_jurnal: Array.isArray(rawData.detail_jurnal) ? rawData.detail_jurnal : []
+                });
+            } else {
+                setLaporan(null);
+            }
         } catch (error) {
             console.error("Error:", error);
             toast.error("Gagal memuat laporan keuangan.");
+            setLaporan(null);
         } finally {
             setLoading(false);
         }
@@ -56,21 +68,28 @@ export function useKeuanganPage() {
         fetchLaporan();
     }, []);
 
-    // 2. Logic Filter Client-Side - Hanya transaksi masuk (pemasukan)
-    const filteredTransactions = laporan?.detail_jurnal.filter(item => {
+    // 2. Logic Filter Client-Side (Defensive)
+    // Gunakan array kosong jika detail_jurnal undefined/null
+    const safeTransactions = laporan?.detail_jurnal || [];
+
+    const filteredTransactions = safeTransactions.filter(item => {
+        // Safety check per item
+        if (!item || !item.tanggal_transaksi || !item.jenis_transaksi) return false;
+
         const date = new Date(item.tanggal_transaksi);
         const itemMonth = date.getMonth() + 1;
         const itemYear = date.getFullYear();
 
         const matchMonth = selectedMonth === 'all' || itemMonth.toString() === selectedMonth;
         const matchYear = itemYear.toString() === selectedYear;
+        // Hanya transaksi masuk (pemasukan)
         const matchType = item.jenis_transaksi.tipe === 'masuk';
 
         return matchMonth && matchYear && matchType;
-    }) || [];
+    });
 
     // 3. Kalkulasi Total - Hanya pemasukan
-    const filteredPemasukan = filteredTransactions.reduce((sum, item) => sum + Number(item.kredit), 0);
+    const filteredPemasukan = filteredTransactions.reduce((sum, item) => sum + Number(item.kredit || 0), 0);
 
     // 4. Helpers
     const formatRupiah = (angka: number) => {
@@ -78,10 +97,11 @@ export function useKeuanganPage() {
             style: 'currency', 
             currency: 'IDR', 
             minimumFractionDigits: 0 
-        }).format(Number(angka));
+        }).format(Number(angka || 0));
     };
 
     const formatDate = (dateString: string) => {
+        if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('id-ID', {
             day: 'numeric', month: 'long', year: 'numeric'
         });
@@ -98,8 +118,8 @@ export function useKeuanganPage() {
             'ID': item.id,
             'Tanggal': item.tanggal_transaksi,
             'Keterangan': item.keterangan,
-            'Jenis': item.jenis_transaksi.nama_jenis,
-            'Pemasukan': Number(item.kredit),
+            'Jenis': item.jenis_transaksi?.nama_jenis || '-',
+            'Pemasukan': Number(item.kredit || 0),
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);

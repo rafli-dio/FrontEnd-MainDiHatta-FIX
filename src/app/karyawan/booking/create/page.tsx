@@ -1,10 +1,11 @@
 'use client';
 
+// 1. Import Suspense
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-// Kita reuse komponen form yang sudah ada di folder admin (karena logicnya sama)
 // Pastikan path import ini benar sesuai struktur folder Anda
 import CreateBookingForm from '@/components/admin/bookings/CreateBookingForm';
 
@@ -22,8 +23,11 @@ export default function KaryawanCreateBookingPage() {
                 </div>
             </div>
 
-            {/* Panggil Form Component yang sudah ada */}
-            <CreateBookingForm />
+            {/* 2. Bungkus Form dengan Suspense */}
+            {/* Ini mencegah error prerender karena komponen form ini membaca URL parameter */}
+            <Suspense fallback={<div>Memuat Form Input...</div>}>
+                <CreateBookingForm />
+            </Suspense>
         </div>
     );
 }

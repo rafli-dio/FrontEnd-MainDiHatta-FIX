@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowRight, Info, Clock, X } from 'lucide-react'; // Tambah import 'X'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowRight, Info, Clock, X } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Booking } from '@/types';
 
@@ -13,6 +13,10 @@ interface CalendarSectionProps {
 export default function CalendarSection({ bookings }: CalendarSectionProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+    // --- PERBAIKAN DI SINI (Defensive Coding) ---
+    // Pastikan bookings selalu dianggap sebagai array kosong jika null/undefined
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
 
     // --- LOGIKA KALENDER ---
     const getDaysInMonth = (date: Date) => {
@@ -39,7 +43,8 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
 
     // Helper Filter Booking
     const getBookingsForDate = (dateString: string) => {
-        return bookings.filter(b => b.tanggal_booking === dateString && b.status_booking_id !== 4);
+        // Gunakan safeBookings agar tidak crash
+        return safeBookings.filter(b => b?.tanggal_booking === dateString && b?.status_booking_id !== 4);
     };
 
     // Cek Status Tanggal
@@ -53,7 +58,7 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
         return { dateString: dateStr, isBooked, count, isPast };
     };
 
-    // --- PERBAIKAN LOGIC TOGGLE DI SINI ---
+    // --- LOGIC TOGGLE ---
     const handleDateClick = (dateString: string) => {
         if (selectedDate === dateString) {
             setSelectedDate(null); // Tutup jika diklik lagi
@@ -164,7 +169,7 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                     {selectedDate && (
                         <div className="bg-gray-50 p-4 sm:p-6 md:p-8 border-t border-gray-100 animate-in slide-in-from-bottom-6 fade-in duration-500 relative">
                             
-                            {/* --- PERBAIKAN: Tombol Close (X) --- */}
+                            {/* Tombol Close (X) */}
                             <button 
                                 onClick={() => setSelectedDate(null)}
                                 className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors"

@@ -90,16 +90,32 @@ export default function Sidebar() {
         }
     };
 
-    // Fetch Notifikasi
+    // --- PERBAIKAN DI SINI ---
+    // Fetch Notifikasi (Dibuat Anti-Crash)
     useEffect(() => {
         const fetchPendingCount = async () => {
             try {
+                // Gunakan endpoint yang spesifik atau ringan jika ada, misal: /api/bookings?status=pending
                 const response = await axios.get('/api/bookings');
-                const bookings = response.data;
-                const count = bookings.filter((b: any) => b.status_booking_id === 2).length;
+                
+                const rawData = response.data;
+                let bookingsArray: any[] = [];
+
+                // 1. Validasi apakah data berbentuk Array
+                if (Array.isArray(rawData)) {
+                    bookingsArray = rawData;
+                } else if (rawData?.data && Array.isArray(rawData.data)) {
+                    // Jaga-jaga kalau formatnya Pagination { data: [...] }
+                    bookingsArray = rawData.data;
+                }
+
+                // 2. Lakukan filter pada array yang sudah pasti aman
+                const count = bookingsArray.filter((b: any) => b?.status_booking_id === 2).length;
+                
                 setPendingBookingsCount(count);
             } catch (error) {
                 console.error("Gagal memuat notifikasi booking", error);
+                setPendingBookingsCount(0); // Set 0 jika error agar tidak crash
             }
         };
 
@@ -108,16 +124,14 @@ export default function Sidebar() {
         return () => clearInterval(interval);
     }, []);
 
-    // Auto expand menu aktif (LOGIKA INVENTARIS SUDAH DIHAPUS)
+    // Auto expand menu aktif
     useEffect(() => {
         baseMenuItems.forEach(item => {
             if (item.submenu) {
-                // Cek apakah ada submenu yang aktif
                 const isChildActive = item.submenu.some(sub => 
                     pathname === sub.href || pathname.startsWith(sub.href + '/')
                 );
                 
-                // Khusus Booking (karena parent href sama dengan child href)
                 const isBookingActive = item.title === 'Booking Lapangan' && pathname.startsWith('/admin/bookings');
 
                 if (isChildActive || isBookingActive) {
@@ -146,13 +160,12 @@ export default function Sidebar() {
             <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
                 {baseMenuItems.map((item) => {
                     
-                    // Logic Badge di Parent Menu
                     let parentBadge = undefined;
                     if (item.title === 'Booking Lapangan' && pendingBookingsCount > 0 && !expandedMenus.includes(item.title)) {
                         parentBadge = pendingBookingsCount;
                     }
 
-                    // A. MENU TUNGGAL (Tanpa Submenu)
+                    // A. MENU TUNGGAL
                     if (!item.submenu) {
                         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
                         return (
@@ -179,8 +192,6 @@ export default function Sidebar() {
 
                     // B. MENU DROPDOWN
                     const isExpanded = expandedMenus.includes(item.title);
-                    
-                    // Logic Active Parent
                     const isParentActive = item.submenu.some(sub => pathname === sub.href || pathname.startsWith(sub.href + '/'));
 
                     return (
@@ -216,15 +227,12 @@ export default function Sidebar() {
                                 </div>
                             </button>
 
-                            {/* SUBMENU ITEMS */}
                             {isExpanded && (
                                 <div className="space-y-1 pl-4 relative before:absolute before:left-6 before:top-0 before:bottom-0 before:w-px before:bg-gray-200">
                                     {item.submenu.map((subItem) => {
-                                        // Logic Active Submenu
                                         let isSubActive = pathname === subItem.href;
 
                                         if (!isSubActive && pathname.startsWith(subItem.href)) {
-                                            // Cek apakah ada sibling yang lebih cocok
                                             const betterMatch = item.submenu?.find(sibling => 
                                                 sibling.href !== subItem.href && 
                                                 sibling.href.length > subItem.href.length && 

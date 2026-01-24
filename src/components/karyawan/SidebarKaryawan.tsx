@@ -72,17 +72,33 @@ export default function SidebarKaryawan() {
         }
     };
 
-    // 1. Fetch Notifikasi Booking (Sama seperti Admin)
+    // --- PERBAIKAN DI SINI (Defensive Coding) ---
+    // 1. Fetch Notifikasi Booking
     useEffect(() => {
         const fetchPendingCount = async () => {
             try {
                 const response = await axios.get('/api/bookings');
-                const bookings = response.data?.data || response.data;
-                // Hitung status "Menunggu Konfirmasi" (ID 2)
-                const count = bookings.filter((b: any) => b.status_booking_id === 2).length;
+                
+                // Ambil data mentah
+                const rawData = response.data;
+                let safeBookings: any[] = [];
+
+                // Validasi: Pastikan data adalah Array
+                if (Array.isArray(rawData)) {
+                    safeBookings = rawData;
+                } else if (rawData?.data && Array.isArray(rawData.data)) {
+                    // Handle jika formatnya Pagination { data: [...] }
+                    safeBookings = rawData.data;
+                }
+
+                // Filter data yang sudah pasti array (Anti-Crash)
+                // ID 2 biasanya = Menunggu Pembayaran / Konfirmasi
+                const count = safeBookings.filter((b: any) => b?.status_booking_id === 2).length;
+                
                 setPendingBookingsCount(count);
             } catch (error) {
                 console.error("Gagal memuat notifikasi booking", error);
+                setPendingBookingsCount(0); // Set 0 jika error agar UI tetap jalan
             }
         };
 
@@ -243,7 +259,7 @@ export default function SidebarKaryawan() {
                     </div>
                 </div>
                 <button 
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                 >
                     <LogOut className="w-4 h-4 mr-2" />

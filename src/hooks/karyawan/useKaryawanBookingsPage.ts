@@ -21,14 +21,25 @@ export function useKaryawanBookingsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
+    // 1. Fetch Bookings (Defensive)
     const fetchBookings = async () => {
         setLoading(true);
         try {
             const response = await axios.get('/api/bookings');
-            setBookings(response.data?.data || response.data);
+            
+            // Validasi Data: Pastikan Array
+            const rawData = response.data?.data || response.data;
+            if (Array.isArray(rawData)) {
+                setBookings(rawData);
+            } else {
+                console.warn("Format data booking tidak valid:", rawData);
+                setBookings([]); // Set array kosong agar tidak crash
+            }
+
         } catch (error) {
             console.error(error);
             toast.error("Gagal memuat data booking.");
+            setBookings([]); // Reset ke array kosong jika error
         } finally {
             setLoading(false);
         }
@@ -40,25 +51,36 @@ export function useKaryawanBookingsPage() {
         return () => clearInterval(interval);
     }, []);
 
-    // --- 2. LOGIC FILTERING ---
-    const filteredBookingsTable = bookings.filter((item) => {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch = 
-            item.kode_booking.toLowerCase().includes(query) ||
-            item.user?.name.toLowerCase().includes(query) ||
-            (item.nama_pengirim && item.nama_pengirim.toLowerCase().includes(query));
+    // --- 2. LOGIC FILTERING (Defensive) ---
+    // Pastikan bookings selalu dianggap array
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
 
-        const matchesStatus = statusFilter === 'all' || item.status_booking_id.toString() === statusFilter;
+    const filteredBookingsTable = safeBookings.filter((item) => {
+        // Safety Check per Item
+        if (!item) return false;
+
+        const query = searchQuery.toLowerCase();
+        
+        // Gunakan Optional Chaining (?.) untuk mencegah crash jika property hilang
+        const matchesSearch = 
+            item.kode_booking?.toLowerCase().includes(query) ||
+            item.user?.name?.toLowerCase().includes(query) ||
+            (item.nama_pengirim && item.nama_pengirim.toLowerCase().includes(query)) ||
+            false;
+
+        const matchesStatus = statusFilter === 'all' || item.status_booking_id?.toString() === statusFilter;
 
         return matchesSearch && matchesStatus;
     });
 
-    const bookingsOnSelectedDate = bookings.filter(b => 
-        selectedDate && b.tanggal_booking === format(selectedDate, 'yyyy-MM-dd') && b.status_booking_id !== 4 
+    const bookingsOnSelectedDate = safeBookings.filter(b => 
+        selectedDate && 
+        b?.tanggal_booking === format(selectedDate, 'yyyy-MM-dd') && 
+        b?.status_booking_id !== 4 
     );
 
-    const bookedDays = bookings
-        .filter(b => b.status_booking_id !== 4)
+    const bookedDays = safeBookings
+        .filter(b => b?.status_booking_id !== 4 && b?.tanggal_booking)
         .map(b => new Date(b.tanggal_booking));
 
     

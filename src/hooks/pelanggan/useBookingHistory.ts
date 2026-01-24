@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Booking } from '@/types';
 
 export function useBookingHistory() {
+    // 1. Inisialisasi state sudah benar
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
@@ -15,10 +16,25 @@ export function useBookingHistory() {
         setLoading(true);
         try {
             const response = await axios.get('/api/bookings?mode=history');
-            setBookings(response.data);
+            
+            // 2. DEBUGGING: Cek apa isi response sebenarnya
+            console.log("Cek Respon API:", response.data); 
+
+            // 3. VALIDASI: Pastikan data yang masuk adalah Array
+            if (Array.isArray(response.data)) {
+                setBookings(response.data);
+            } else if (response.data && Array.isArray(response.data.data)) {
+                // Jaga-jaga kalau response bentuknya { data: [...] } (Pagination Laravel)
+                setBookings(response.data.data);
+            } else {
+                console.warn("Format data API salah, diharapkan array:", response.data);
+                setBookings([]); // Set kosong agar tidak error
+            }
+
         } catch (error) {
             console.error(error);
             toast.error("Gagal memuat riwayat booking.");
+            setBookings([]); // Pastikan tetap array kosong kalau error
         } finally {
             setLoading(false);
         }
@@ -28,6 +44,7 @@ export function useBookingHistory() {
         fetchBookings();
     }, [fetchBookings]);
 
+    // ... (Fungsi uploadPaymentProof dan cancelBooking biarkan saja, sudah aman) ...
     // Upload bukti pembayaran
     const uploadPaymentProof = useCallback(async (bookingId: number, file: File) => {
         setIsUploading(true);
@@ -60,12 +77,14 @@ export function useBookingHistory() {
         }
     }, [fetchBookings]);
 
-    // Filter bookings
-    const activeBookings = bookings.filter(b => [1, 2, 3].includes(b.status_booking_id));
-    const historyBookings = bookings.filter(b => [4, 5, 6].includes(b.status_booking_id));
+
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
+
+    const activeBookings = safeBookings.filter(b => [1, 2, 3].includes(b.status_booking_id));
+    const historyBookings = safeBookings.filter(b => [4, 5, 6].includes(b.status_booking_id));
 
     return {
-        bookings,
+        bookings: safeBookings, // Return yang aman
         activeBookings,
         historyBookings,
         loading,

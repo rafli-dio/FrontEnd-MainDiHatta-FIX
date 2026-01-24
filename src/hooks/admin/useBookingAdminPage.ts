@@ -20,10 +20,17 @@ export function useBookingAdminPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const processAutoFinish = useCallback((data: Booking[]) => {
+    // 1. Process Auto Finish (Defensive)
+    const processAutoFinish = useCallback((data: any[]) => {
+        // Pastikan input benar-benar array
+        if (!Array.isArray(data)) return [];
+
         const now = new Date();
 
         return data.map((booking) => {
+            // Safety check: jika booking null/undefined
+            if (!booking) return booking;
+
             const bookingEndString = `${booking.tanggal_booking}T${booking.jam_selesai}`;
             const bookingEndDate = new Date(bookingEndString);
 
@@ -32,7 +39,7 @@ export function useBookingAdminPage() {
                     ...booking,
                     status_booking_id: 5, 
                     status_booking: {
-                        ...booking.status_booking,
+                        ...(booking.status_booking || {}), // Handle jika status_booking null
                         id: 5,
                         nama_status: 'Selesai', 
                         color: 'success'
@@ -43,19 +50,32 @@ export function useBookingAdminPage() {
         });
     }, []);
 
+    // 2. Fetch Bookings (Anti-Crash)
     const fetchBookings = useCallback(async () => {
-
         try {
             const response = await axios.get('/api/bookings');
-            const rawData = Array.isArray(response.data?.data) 
-                ? response.data.data 
-                : Array.isArray(response.data) ? response.data : [];
             
-            const processedData = processAutoFinish(rawData);
+            // --- VALIDASI RESPONS API ---
+            const rawData = response.data;
+            let safeData: any[] = [];
+
+            if (Array.isArray(rawData)) {
+                safeData = rawData;
+            } else if (rawData?.data && Array.isArray(rawData.data)) {
+                // Handle Pagination Laravel { data: [...] }
+                safeData = rawData.data;
+            } else {
+                console.warn("Format data booking tidak valid:", rawData);
+                safeData = [];
+            }
             
+            const processedData = processAutoFinish(safeData);
             setBookings(processedData);
+
         } catch (error) {
             console.error("Fetch error:", error);
+            // JANGAN biarkan bookings undefined/null, set ke empty array
+            setBookings([]); 
         } finally {
             setLoading(false);
         }
@@ -69,35 +89,46 @@ export function useBookingAdminPage() {
         return () => clearInterval(interval);
     }, [fetchBookings]);
 
-    const filteredBookings = bookings.filter(item => {
+    // 3. Filter & Search (Safe Logic)
+    // Pastikan bookings selalu array sebelum difilter
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
+
+    const filteredBookings = safeBookings.filter(item => {
+        if (!item) return false; // Safety check
+
         const searchLower = searchQuery.toLowerCase();
+        
+        // Gunakan Optional Chaining (?.) untuk mencegah crash jika property hilang
         const matchSearch = 
-            item.kode_booking.toLowerCase().includes(searchLower) || 
-            item.user?.name.toLowerCase().includes(searchLower) ||
-            (item.nama_pengirim && item.nama_pengirim.toLowerCase().includes(searchLower));
-        const matchStatus = filterStatus === 'all' || item.status_booking_id.toString() === filterStatus;
+            item.kode_booking?.toLowerCase().includes(searchLower) || 
+            item.user?.name?.toLowerCase().includes(searchLower) ||
+            (item.nama_pengirim && item.nama_pengirim.toLowerCase().includes(searchLower)) ||
+            false;
+            
+        const matchStatus = filterStatus === 'all' || item.status_booking_id?.toString() === filterStatus;
         
         return matchSearch && matchStatus;
     });
 
+    // Pagination Logic
     const totalData = filteredBookings.length;
     const totalPages = Math.ceil(totalData / itemsPerPage) || 1;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredBookings.slice(indexOfFirstItem, indexOfLastItem);
 
-
-    const bookingsOnSelectedDate = bookings.filter(b => 
+    // Calendar Filter Logic
+    const bookingsOnSelectedDate = safeBookings.filter(b => 
         selectedDate && 
-        b.tanggal_booking === format(selectedDate, 'yyyy-MM-dd') && 
-        b.status_booking_id !== 4 
+        b?.tanggal_booking === format(selectedDate, 'yyyy-MM-dd') && 
+        b?.status_booking_id !== 4 
     );
 
-    const bookedDays = bookings
-        .filter(b => b.status_booking_id !== 4)
+    const bookedDays = safeBookings
+        .filter(b => b?.status_booking_id !== 4 && b?.tanggal_booking)
         .map(b => new Date(b.tanggal_booking));
 
-    
+    // Handlers
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
@@ -117,7 +148,7 @@ export function useBookingAdminPage() {
         
         setIsProcessing(true);
         try {
-            const response = await axios.patch(`/api/bookings/${id}/status`, { status_booking_id: 3 });
+            await axios.patch(`/api/bookings/${id}/status`, { status_booking_id: 3 });
             toast.success("Booking berhasil dikonfirmasi!");
 
             setIsDialogOpen(false);
@@ -140,10 +171,8 @@ export function useBookingAdminPage() {
         
         setIsProcessing(true);
         try {
-            const response = await axios.patch(`/api/bookings/${id}/cancel`); 
+            await axios.patch(`/api/bookings/${id}/cancel`); 
             toast.success("Booking dibatalkan.");
-            
-    
             
             setIsDialogOpen(false);
             fetchBookings();
@@ -156,7 +185,7 @@ export function useBookingAdminPage() {
 
     return {
         bookings: currentItems,
-        allBookings: bookings, 
+        allBookings: safeBookings, // Gunakan safeBookings
         loading,
         totalData,
         viewMode, setViewMode,

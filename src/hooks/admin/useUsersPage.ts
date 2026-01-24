@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from '@/lib/axios';
 import { toast } from 'sonner';
 import { User, Role } from '@/types';
@@ -20,33 +20,54 @@ export function useUsersPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editData, setEditData] = useState<User | null>(null);
 
-    // 1. Fetch Data (Users & Roles)
-    const fetchData = async () => {
+    // 1. Fetch Data (Defensive)
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const [resUsers, resRoles] = await Promise.all([
                 axios.get('/api/users'),
                 axios.get('/api/roles')
             ]);
-            setUsers(resUsers.data?.data || resUsers.data);
-            setRoles(resRoles.data?.data || resRoles.data);
+
+            // --- Helper Safe Array ---
+            const getSafeArray = (res: any) => {
+                const data = res.data?.data || res.data;
+                return Array.isArray(data) ? data : [];
+            };
+
+            setUsers(getSafeArray(resUsers));
+            setRoles(getSafeArray(resRoles));
+
         } catch (error) {
             console.error("Error fetching data:", error);
             toast.error("Gagal memuat data user.");
+            // Reset ke array kosong agar tidak crash
+            setUsers([]);
+            setRoles([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
-    // 2. Filter Logic
-    const filteredUsers = users.filter((item) => {
-        const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            item.email.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchRole = filterRole === 'all' || item.role_id.toString() === filterRole;
+    // 2. Filter Logic (Safe Filtering)
+    // Pastikan users selalu array
+    const safeUsers = Array.isArray(users) ? users : [];
+
+    const filteredUsers = safeUsers.filter((item) => {
+        // Safety check per item
+        if (!item) return false;
+
+        const name = item.name?.toLowerCase() || '';
+        const email = item.email?.toLowerCase() || '';
+        const query = searchQuery.toLowerCase();
+
+        const matchSearch = name.includes(query) || email.includes(query);
+        const matchRole = filterRole === 'all' || item.role_id?.toString() === filterRole;
+        
         return matchSearch && matchRole;
     });
 

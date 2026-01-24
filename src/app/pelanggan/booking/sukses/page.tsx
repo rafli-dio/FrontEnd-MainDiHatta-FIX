@@ -1,12 +1,14 @@
 'use client';
 
+// 1. Import Suspense
+import { Suspense, useEffect } from 'react'; 
 import { useBookingSuccessPage } from '@/hooks/pelanggan/useBookingSuccessPage';
 import BookingSuccessHeader from '@/components/pelanggan/booking/success/BookingSuccessHeader';
 import BookingTicket from '@/components/pelanggan/booking/success/BookingTicket';
 import BookingSuccessActions from '@/components/pelanggan/booking/success/BookingSuccessActions';
-import { useEffect } from 'react';
 
-export default function BookingSuccessPage() {
+// 2. Ganti nama fungsi komponen utama ini menjadi 'BookingSuccessContent' (bukan export default lagi)
+function BookingSuccessContent() {
     const { 
         booking, 
         loading, 
@@ -33,7 +35,6 @@ export default function BookingSuccessPage() {
     }
 
     if (!booking) return null;
-
 
     const namaPemesan = booking?.user?.name || "Pelanggan";
     const kodeBooking = booking?.kode_booking || "-";
@@ -75,5 +76,19 @@ export default function BookingSuccessPage() {
                 }
             `}</style>
         </div>
+    );
+}
+
+// 3. Buat komponen wrapper baru sebagai Default Export
+export default function BookingSuccessPage() {
+    return (
+        // Bungkus dengan Suspense agar Next.js melewati error prerender parameter URL
+        <Suspense fallback={
+            <div className="min-h-screen from-[#D93F21] to-orange-500 flex items-center justify-center">
+                <div className="text-white">Memuat Data Transaksi...</div>
+            </div>
+        }>
+            <BookingSuccessContent />
+        </Suspense>
     );
 }

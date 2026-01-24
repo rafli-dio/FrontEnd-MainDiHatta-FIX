@@ -23,9 +23,10 @@ export default function AdminFAQPage() {
         fetchFAQs();
     }, []);
 
-    // Filter FAQ berdasarkan search
-    const filteredFAQs = faqs.filter(faq =>
-        faq.pertanyaan.toLowerCase().includes(searchQuery.toLowerCase())
+    // --- PERBAIKAN DI SINI ---
+    // Menggunakan (faqs || []) untuk mencegah crash jika faqs bernilai null/undefined
+    const filteredFAQs = (faqs || []).filter(faq =>
+        faq?.pertanyaan?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleAdd = () => {
