@@ -77,19 +77,20 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthProps = 
 
     // 4. LOGOUT
     const logout = async () => {
-        // Hanya panggil API logout jika user masih dianggap login (tidak error)
-        if (!error) {
             try {
-                await axios.post('/api/auth/logout');
-            } catch (e) {
-                console.error("Logout error", e);
+                // Coba logout ke backend
+                await axios.post('/api/auth/logout'); 
+            } catch (error) {
+                // Jika backend error (misal user sudah dihapus), biarkan saja
+                console.warn("Logout backend gagal, lanjut cleanup lokal.");
+            } finally {
+                // PERBAIKAN DI SINI: Gunakan 'undefined', bukan 'null'
+                await mutate(undefined, false); 
+                
+                // Redirect paksa ke halaman login
+                window.location.href = '/login'; 
             }
-            await mutate(undefined, false); // Kosongkan cache SWR
-        }
-        
-        // Hard refresh ke halaman login untuk membersihkan state react
-        window.location.pathname = '/login'; 
-    };
+        };
 
     // 5. MIDDLEWARE LOGIC
     useEffect(() => {
