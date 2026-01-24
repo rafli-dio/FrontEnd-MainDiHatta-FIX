@@ -1,0 +1,220 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:file((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+)/",
+      "destination": "/:file",
+      "internal": true,
+      "priority": true,
+      "missing": [
+        {
+          "type": "header",
+          "key": "x-nextjs-data"
+        }
+      ],
+      "statusCode": 308,
+      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+))/$"
+    },
+    {
+      "source": "/:notfile((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+)",
+      "destination": "/:notfile/",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+))$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/about",
+      "regex": "^/about(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/about(?:/)?$"
+    },
+    {
+      "page": "/admin/bookings",
+      "regex": "^/admin/bookings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/bookings(?:/)?$"
+    },
+    {
+      "page": "/admin/bookings/create",
+      "regex": "^/admin/bookings/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/bookings/create(?:/)?$"
+    },
+    {
+      "page": "/admin/dashboard",
+      "regex": "^/admin/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/dashboard(?:/)?$"
+    },
+    {
+      "page": "/admin/faq",
+      "regex": "^/admin/faq(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/faq(?:/)?$"
+    },
+    {
+      "page": "/admin/keuangan",
+      "regex": "^/admin/keuangan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/keuangan(?:/)?$"
+    },
+    {
+      "page": "/admin/lapangan",
+      "regex": "^/admin/lapangan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/lapangan(?:/)?$"
+    },
+    {
+      "page": "/admin/master/payment-method",
+      "regex": "^/admin/master/payment\\-method(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/master/payment\\-method(?:/)?$"
+    },
+    {
+      "page": "/admin/master/status-booking",
+      "regex": "^/admin/master/status\\-booking(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/master/status\\-booking(?:/)?$"
+    },
+    {
+      "page": "/admin/users",
+      "regex": "^/admin/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/users(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/karyawan/booking",
+      "regex": "^/karyawan/booking(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/karyawan/booking(?:/)?$"
+    },
+    {
+      "page": "/karyawan/booking/create",
+      "regex": "^/karyawan/booking/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/karyawan/booking/create(?:/)?$"
+    },
+    {
+      "page": "/karyawan/dashboard",
+      "regex": "^/karyawan/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/karyawan/dashboard(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/pelanggan/about",
+      "regex": "^/pelanggan/about(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pelanggan/about(?:/)?$"
+    },
+    {
+      "page": "/pelanggan/booking/create",
+      "regex": "^/pelanggan/booking/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pelanggan/booking/create(?:/)?$"
+    },
+    {
+      "page": "/pelanggan/booking/riwayat",
+      "regex": "^/pelanggan/booking/riwayat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pelanggan/booking/riwayat(?:/)?$"
+    },
+    {
+      "page": "/pelanggan/booking/sukses",
+      "regex": "^/pelanggan/booking/sukses(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pelanggan/booking/sukses(?:/)?$"
+    },
+    {
+      "page": "/pelanggan/faq",
+      "regex": "^/pelanggan/faq(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pelanggan/faq(?:/)?$"
+    },
+    {
+      "page": "/pelanggan/home",
+      "regex": "^/pelanggan/home(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pelanggan/home(?:/)?$"
+    },
+    {
+      "page": "/pelanggan/notifications",
+      "regex": "^/pelanggan/notifications(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pelanggan/notifications(?:/)?$"
+    },
+    {
+      "page": "/profile",
+      "regex": "^/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/profile(?:/)?$"
+    },
+    {
+      "page": "/register",
+      "regex": "^/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/register(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

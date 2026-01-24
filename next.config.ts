@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 
-// HAPUS ": NextConfig" setelah nama variabel
 const nextConfig = { 
   output: "export", 
   trailingSlash: true,
@@ -21,7 +20,6 @@ const nextConfig = {
     ],
   },
 
-  // Tambahkan // @ts-ignore jika masih merah, tapi biasanya menghapus : NextConfig sudah cukup
   eslint: {
     ignoreDuringBuilds: true,
   },

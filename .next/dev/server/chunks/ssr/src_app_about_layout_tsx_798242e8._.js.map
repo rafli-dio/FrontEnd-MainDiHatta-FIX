@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///E:/03-NGODING/20-MainDiHatta.id/FrontEnd-FIX/maindihatta-frontend/src/app/about/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\r\n\r\nexport const metadata: Metadata = {\r\n  title: \"Tentang Kami - MainDiHatta.id\",\r\n  description: \"Pelajari lebih lanjut tentang MainDiHatta.id dan visi kami dalam industri penyewaan lapangan olahraga.\",\r\n};\r\n\r\nexport default function AboutLayout({\r\n  children,\r\n}: {\r\n  children: React.ReactNode;\r\n}) {\r\n  return children;\r\n}\r\n"],"names":[],"mappings":";;;;;;AAEO,MAAM,WAAqB;IAChC,OAAO;IACP,aAAa;AACf;AAEe,SAAS,YAAY,EAClC,QAAQ,EAGT;IACC,OAAO;AACT"}}]
-}

@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/pelanggan/layout,_N_T_/pelanggan/faq/layout,_N_T_/pelanggan/faq/page,_N_T_/pelanggan/faq/"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/pelanggan/faq/__PAGE__",
+    "/pelanggan/faq",
+    "/pelanggan",
+    "/_index",
+    "/_head"
+  ]
+}

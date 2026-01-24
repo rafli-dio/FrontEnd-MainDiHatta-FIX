@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/master/layout,_N_T_/admin/master/payment-method/layout,_N_T_/admin/master/payment-method/page,_N_T_/admin/master/payment-method/"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/master/payment-method/__PAGE__",
+    "/admin/master/payment-method",
+    "/admin/master",
+    "/admin",
+    "/_index",
+    "/_head"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/pelanggan/layout,_N_T_/pelanggan/booking/layout,_N_T_/pelanggan/booking/riwayat/layout,_N_T_/pelanggan/booking/riwayat/page,_N_T_/pelanggan/booking/riwayat/"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/pelanggan/booking/riwayat/__PAGE__",
+    "/pelanggan/booking/riwayat",
+    "/pelanggan/booking",
+    "/pelanggan",
+    "/_index",
+    "/_head"
+  ]
+}

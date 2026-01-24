@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/pelanggan/layout,_N_T_/pelanggan/home/layout,_N_T_/pelanggan/home/page,_N_T_/pelanggan/home/"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/pelanggan/home/__PAGE__",
+    "/pelanggan/home",
+    "/pelanggan",
+    "/_index",
+    "/_head"
+  ]
+}

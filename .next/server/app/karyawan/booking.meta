@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/karyawan/layout,_N_T_/karyawan/booking/layout,_N_T_/karyawan/booking/page,_N_T_/karyawan/booking/"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/karyawan/booking/__PAGE__",
+    "/karyawan/booking",
+    "/karyawan",
+    "/_index",
+    "/_head"
+  ]
+}
