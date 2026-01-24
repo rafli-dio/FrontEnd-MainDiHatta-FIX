@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import axios from 'axios'; 
-import { Search, LogOut, Bell, HelpCircle, Menu, X, User } from 'lucide-react';
+// PERBAIKAN 1: Gunakan axios dari lib yang sudah dikonfigurasi (bawa cookie/token)
+import axios from '@/lib/axios'; 
+import { Search, LogOut, Bell, HelpCircle, Menu, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { sweetAlert } from '@/lib/sweetAlert';
 
+// Custom Hook untuk Notifikasi
 const useUnreadNotifications = (userId: number | string | undefined) => {
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -17,29 +19,23 @@ const useUnreadNotifications = (userId: number | string | undefined) => {
 
         const fetchNotifications = async () => {
             try {
-                const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-                const response = await axios.get(`${baseURL}/notifications/unread-count`, {
-                    params: { 
-                        user_id: userId 
-                    },
-                    headers: {
-                        'Accept': 'application/json', 
-                    }
+                // PERBAIKAN: Langsung pakai axios instance, tidak perlu define BaseURL lagi
+                // path relative akan otomatis digabung dengan BaseURL di @/lib/axios
+                const response = await axios.get('/api/notifications/unread-count', {
+                    params: { user_id: userId }
                 });
 
-                setUnreadCount(response.data.count);
+                // Pastikan response.data.count ada, jika tidak set 0
+                setUnreadCount(response.data.count || 0);
 
             } catch (error) {
-                if (axios.isAxiosError(error)) {
-                    console.error("Axios Error:", error.response?.status, error.response?.data);
-                } else {
-                    console.error("Unknown Error:", error);
-                }
+                console.error("Gagal memuat notifikasi:", error);
             }
         };
 
         fetchNotifications();
 
+        // Polling setiap 30 detik
         const interval = setInterval(fetchNotifications, 30000);
         return () => clearInterval(interval);
     }, [userId]);
@@ -48,20 +44,24 @@ const useUnreadNotifications = (userId: number | string | undefined) => {
 };
 
 export default function Navbar() {
-    const { user, logout } = useAuth();
+    // PERBAIKAN 2: Ambil isLoading dari useAuth (pastikan useAuth return ini)
+    const { user, logout, isLoading } = useAuth(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     
+    // Hooks dipanggil di top level, tapi logic fetch di dalamnya sudah dicek if (!userId)
     const unreadCount = useUnreadNotifications(user?.id);
 
     const handleLogout = async () => {
         const result = await sweetAlert.confirmLogout();
         if (result.isConfirmed) {
-            logout();
+            await logout();
+            setMobileMenuOpen(false); // Tutup menu mobile jika sedang terbuka
         }
     };
 
     const closeMobileMenu = () => setMobileMenuOpen(false);
 
+    // Logic Link Navigasi
     const navLinks = [
         { label: 'Beranda', href: user ? '/pelanggan/home' : '/' },
         { label: 'Tentang', href: user ? '/pelanggan/about' : '/about' },
@@ -73,10 +73,12 @@ export default function Navbar() {
     return (
         <nav className="sticky top-4 z-50 mx-4 md:mx-12 mt-4 bg-[#1a1a1a] text-white py-3 px-6 md:px-8 rounded-2xl shadow-xl border border-gray-800/50 backdrop-blur-md transition-all duration-300">
             <div className="flex justify-between items-center">
-                <div className="text-xl md:text-2xl font-bold tracking-tight">
+                {/* LOGO */}
+                <Link href={user ? "/pelanggan/home" : "/"} className="text-xl md:text-2xl font-bold tracking-tight">
                     MainDi<span className="text-[#D93F21]">Hatta</span>.id
-                </div>
+                </Link>
 
+                {/* DESKTOP MENU */}
                 <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
                     {navLinks.map((link) => (
                         <Link
@@ -90,17 +92,27 @@ export default function Navbar() {
                     ))}
                 </div>
 
+                {/* RIGHT SECTION (Search & Auth) */}
                 <div className="flex items-center gap-4">
+                    {/* Search Bar (Hidden on Mobile) */}
                     <div className="relative hidden sm:block">
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Cari..."
                             className="bg-white/10 text-white px-4 py-1.5 rounded-full text-sm focus:outline-none border border-transparent focus:border-[#D93F21] w-32 focus:w-56 transition-all placeholder-gray-400"
                         />
                         <Search className="w-4 h-4 absolute right-3 top-2 text-gray-400" />
                     </div>
+
                     <div className="flex items-center gap-3 pl-4 border-l border-gray-700">
-                        {user ? (
+                        {/* PERBAIKAN 3: Handling Loading State agar tidak flickering */}
+                        {isLoading ? (
+                            <div className="flex items-center gap-2 text-gray-400">
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <span className="text-xs">Memuat...</span>
+                            </div>
+                        ) : user ? (
+                            // KONDISI: SUDAH LOGIN
                             <>
                                 <Link href="/pelanggan/notifications" className="relative group">
                                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 relative">
@@ -115,8 +127,11 @@ export default function Navbar() {
                                 </Link>
 
                                 <Link href="/profile">
-                                    <span className="text-sm text-gray-300 hidden md:block">Hi, {user?.name}</span>
+                                    <span className="text-sm text-gray-300 hidden md:block hover:text-white transition">
+                                        Hi, {user.name}
+                                    </span>
                                 </Link>
+
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -127,16 +142,18 @@ export default function Navbar() {
                                 </Button>
                             </>
                         ) : (
-                            <div className="flex items-center gap-3">
-                                <Link href="/login" className="text-sm text-white underline">
+                            // KONDISI: BELUM LOGIN (GUEST)
+                            <div className="flex items-center gap-3 hidden md:flex">
+                                <Link href="/login" className="text-sm text-white hover:underline decoration-[#D93F21] underline-offset-4">
                                     Masuk
                                 </Link>
-                                <Link href="/register" className="text-sm text-white ml-2">
+                                <Link href="/register" className="px-4 py-1.5 bg-[#D93F21] hover:bg-[#b9351b] text-white text-sm rounded-full transition font-medium">
                                     Daftar
                                 </Link>
                             </div>
                         )}
 
+                        {/* MOBILE MENU TRIGGER */}
                         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                             <SheetTrigger asChild>
                                 <Button
@@ -151,11 +168,14 @@ export default function Navbar() {
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="right" className="w-[280px] bg-[#1a1a1a] text-white border-l border-gray-800/50">
-                                <SheetTitle className="text-white sr-only">Menu Navigasi</SheetTitle>
+                                <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
+                                
                                 <div className="flex flex-col gap-6 mt-8">
-                                    <Link href="/" className="text-xl font-bold tracking-tight">
+                                    <Link href="/" onClick={closeMobileMenu} className="text-xl font-bold tracking-tight">
                                         MainDi<span className="text-[#D93F21]">Hatta</span>.id
                                     </Link>
+
+                                    {/* MENU ITEMS */}
                                     <nav className="flex flex-col gap-3">
                                         {navLinks.map((link) => (
                                             <Link
@@ -171,7 +191,9 @@ export default function Navbar() {
                                     </nav>
 
                                     <div className="border-t border-gray-700 pt-4">
-                                        {user ? (
+                                        {isLoading ? (
+                                            <div className="text-center text-sm text-gray-500">Memuat profil...</div>
+                                        ) : user ? (
                                             <div className="flex flex-col gap-3">
                                                 <Link 
                                                     href="/profile" 
@@ -200,10 +222,7 @@ export default function Navbar() {
 
                                                 <Button
                                                     variant="ghost"
-                                                    onClick={() => {
-                                                        closeMobileMenu();
-                                                        handleLogout();
-                                                    }}
+                                                    onClick={handleLogout}
                                                     className="text-red-400 hover:bg-red-400/10 hover:text-red-300 justify-start gap-2 px-3 w-full"
                                                 >
                                                     <LogOut className="w-4 h-4" />
@@ -211,17 +230,14 @@ export default function Navbar() {
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-3">
                                                 <Link href="/login" onClick={closeMobileMenu}>
-                                                    <Button className="w-full bg-[#D93F21] text-white hover:bg-[#C0341A]">
+                                                    <Button className="w-full bg-[#D93F21] hover:bg-[#b9351b] text-white">
                                                         Masuk
                                                     </Button>
                                                 </Link>
                                                 <Link href="/register" onClick={closeMobileMenu}>
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full border-gray-600 text-white hover:bg-white/10"
-                                                    >
+                                                    <Button variant="outline" className="w-full border-gray-600 text-white hover:bg-white/10 bg-transparent">
                                                         Daftar
                                                     </Button>
                                                 </Link>
