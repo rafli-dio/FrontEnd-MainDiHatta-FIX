@@ -1,56 +1,52 @@
 import useSWR from 'swr';
-import axios from '@/lib/axios';
+import axios from '@/lib/axios'; 
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { User } from '@/types';
 
-interface UseAuthProps {
-    middleware?: 'guest' | 'auth' | 'public';
-    redirectIfAuthenticated?: string;
-}
-
-interface AuthActions {
-    setErrors: (errors: any) => void;
-    setStatus?: (status: string | null) => void;
-    [key: string]: any;
-}
-
-export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthProps = {}) => {
+export const useAuth = ({ middleware, redirectIfAuthenticated }: any = {}) => {
     const router = useRouter();
     const params = useParams();
 
     // 1. FETCH USER
-    // Menambahkan konfigurasi agar SWR tidak retry jika error 401 (Unauthorized)
-    const { data: user, error, mutate, isLoading } = useSWR<User>('/api/auth/user', () =>
-        axios
-            .get('/api/auth/user')
-            .then(res => res.data?.data || res.data)
-            .catch(error => {
-                // Jika error 409 (Verifikasi Email), lempar ke halaman verify
-                if (error.response?.status === 409) {
-                    router.push('/verify-email');
-                }
-                // Jika error 401 (Belum Login), biarkan error agar ditangkap logic middleware
-                if (error.response?.status !== 409) throw error;
-            }),
-        {
-            revalidateOnFocus: false, // Opsional: Hemat request
-            shouldRetryOnError: false, // PENTING: Jangan retry jika 401
-        }
+    const { data: user, error, mutate, isLoading } = useSWR('/api/auth/user', () =>
+            axios
+                .get('/api/auth/user')
+                .then(res => {
+                    const data = res.data?.data || res.data;
+                    
+                    if (!data || !data.id) { 
+                        throw { response: { status: 401 } }; 
+                    }
+
+                    return data;
+                })
+                .catch(error => {
+                    if (error.response?.status === 409) {
+                        router.push('/verify-email');
+                        return null;
+                    }
+                    if (error.response?.status === 401) {
+                        return null;
+                    }
+                    throw error;
+                }),
+            {
+                revalidateOnFocus: false,
+                shouldRetryOnError: false,
+            }
     );
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
 
     // 2. LOGIN
-    const login = async ({ setErrors, setStatus, ...props }: AuthActions) => {
+    const login = async ({ setErrors, setStatus, ...props }: any) => {
         await csrf();
         setErrors([]);
         setStatus?.(null);
 
         try {
-            // Tambahkan slash di depan agar absolute path
             await axios.post('/api/login', props);
-            await mutate(); // Refresh data user
+            await mutate(); 
         } catch (error: any) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
@@ -59,11 +55,20 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthProps = 
         }
     };
 
-    // 3. REGISTER
-    const register = async ({ setErrors, ...props }: AuthActions) => {
+    const logout = async () => {
+        try {
+            await axios.post('/api/auth/logout');
+        } catch (error) {
+            console.error("Logout error", error);
+        } finally {
+            await mutate(null, false); 
+            router.push('/login');
+        }
+    };
+
+    const register = async ({ setErrors, ...props }: any) => {
         await csrf();
         setErrors([]);
-
         try {
             await axios.post('/api/register', props);
             await mutate();
@@ -75,44 +80,20 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthProps = 
         }
     };
 
-    // 4. LOGOUT
-    const logout = async () => {
-            try {
-                // Coba logout ke backend
-                await axios.post('/api/auth/logout'); 
-            } catch (error) {
-                // Jika backend error (misal user sudah dihapus), biarkan saja
-                console.warn("Logout backend gagal, lanjut cleanup lokal.");
-            } finally {
-                // PERBAIKAN DI SINI: Gunakan 'undefined', bukan 'null'
-                await mutate(undefined, false); 
-                
-                // Redirect paksa ke halaman login
-                window.location.href = '/login'; 
-            }
-        };
-
-    // 5. MIDDLEWARE LOGIC
     useEffect(() => {
-        // Skenario 1: Middleware GUEST (Halaman Login/Register)
-        // Jika user SUDAH login (ada data user), lempar ke dashboard
+        if (isLoading) return;
+
         if (middleware === 'guest' && redirectIfAuthenticated && user) {
             router.push(redirectIfAuthenticated);
         }
 
-        // Skenario 2: Middleware AUTH (Dashboard/Protected Routes)
-        // Jika terjadi error (biasanya 401 Unauthorized), lempar keluar
-        // Note: Kita cek !isLoading agar tidak redirect saat data masih loading
-        if (middleware === 'auth' && error && !isLoading) {
-             // Jangan panggil fungsi logout() di sini karena akan memicu API call loop
-             // Cukup redirect paksa (atau gunakan router.push('/login'))
-             window.location.pathname = '/login'; 
+ 
+        if (middleware === 'auth' && (error || user === null)) {
+             mutate(null, false); 
+             router.push('/login');
         }
 
-        // Skenario 3: Middleware PUBLIC (Landing Page)
-        // Tidak melakukan apa-apa, membiarkan user (null atau ada) tetap di halaman.
-        
-    }, [user, error, isLoading, middleware, redirectIfAuthenticated, router]);
+    }, [user, error, isLoading, middleware, redirectIfAuthenticated, router, mutate]);
 
     return {
         user,
@@ -120,6 +101,6 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthProps = 
         register,
         logout,
         mutate,
-        isLoading, 
+        isLoading,
     };
 };
