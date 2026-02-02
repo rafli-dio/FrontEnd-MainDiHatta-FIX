@@ -10,9 +10,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white font-sans mt-[50px]">
       
-      {/* --- HERO SECTION --- */}
       <section className="relative h-[400px] md:h-[500px] flex items-center justify-center bg-black overflow-hidden">
-        {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0  bg-cover bg-center opacity-50 grayscale hover:grayscale-0 transition-all duration-700"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>

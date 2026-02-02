@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react'; // 1. Import useEffect
 import { Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,13 +22,24 @@ interface BookingWizardStep3Props {
 
 export default function BookingWizardStep3({ formData, setFormData, paymentMethods, totalHarga }: BookingWizardStep3Props) {
     
+    // 2. Tambahkan useEffect untuk auto-fill jumlah pembayaran
+    useEffect(() => {
+        // Hanya update jika totalHarga valid dan formData belum diisi manual (opsional, bisa dihapus if-nya kalau mau selalu paksa update)
+        if (totalHarga > 0) {
+            setFormData({
+                ...formData,
+                jumlah_dp: totalHarga.toString() // Konversi ke string karena Input value biasanya string
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [totalHarga]); // Trigger efek setiap kali totalHarga berubah
+
     const formatRupiah = (num: number) => 
         new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
     return (
         <div className="space-y-6 max-w-lg animate-in slide-in-from-right-4 duration-300">
             
-            {/* --- Bagian Informasi Rekening (DI ATAS) --- */}
             <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-sm shadow-sm">
                 <p className="font-bold text-blue-900 mb-1 flex items-center gap-2">
                     ℹ️ Informasi Rekening Tujuan Transfer
@@ -43,7 +55,7 @@ export default function BookingWizardStep3({ formData, setFormData, paymentMetho
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label>Jenis Pembayaran</Label>
-                    <Select onValueChange={(v) => setFormData({...formData, payment_method_id: v})}>
+                    <Select onValueChange={(v) => setFormData({...formData, payment_method_id: v})} value={formData.payment_method_id?.toString()}>
                         <SelectTrigger className="h-12 bg-gray-50 border-gray-300 rounded-lg"><SelectValue placeholder="Pilih Bank" /></SelectTrigger>
                         <SelectContent>
                             {paymentMethods.map(method => (
@@ -57,18 +69,22 @@ export default function BookingWizardStep3({ formData, setFormData, paymentMetho
                     <Input placeholder="pilih asal bank" className="h-12 bg-gray-50 border-gray-300 rounded-lg" value={formData.asal_bank} onChange={e => setFormData({...formData, asal_bank: e.target.value})} />
                 </div>
                 
-                {/* Field Status Pembayaran DIHAPUS/HIDDEN */}
-
                 <div className="space-y-2">
                     <Label>Nama Pengirim</Label>
                     <Input placeholder="masukan nama pengirim" className="h-12 bg-gray-50 border-gray-300 rounded-lg" value={formData.nama_pengirim} onChange={e => setFormData({...formData, nama_pengirim: e.target.value})} />
                 </div>
                 <div className="space-y-2">
                     <Label>Jumlah Pembayaran</Label>
-                    <Input type="number" placeholder="masukan jumlah pembayaran" className="h-12 bg-gray-50 border-gray-300 rounded-lg" value={formData.jumlah_dp} onChange={e => setFormData({...formData, jumlah_dp: e.target.value})} />
+                    <Input 
+                        type="number" 
+                        placeholder="masukan jumlah pembayaran" 
+                        className="h-12 bg-gray-50 border-gray-300 rounded-lg font-bold text-gray-700" 
+                        value={formData.jumlah_dp} 
+                        onChange={e => setFormData({...formData, jumlah_dp: e.target.value})} 
+                    />
                     <p className="text-xs text-[#D93F21] font-medium mt-1">Total Tagihan: {formatRupiah(totalHarga)}</p>
                 </div>
-                <div className="col-span-2 space-y-2"> {/* col-span-2 agar file upload lebar penuh */}
+                <div className="col-span-2 space-y-2"> 
                     <Label>Bukti Pembayaran</Label>
                     <div className="relative">
                         <Input type="file" accept="image/*" className="cursor-pointer h-12 bg-gray-50 border-gray-300 rounded-lg pt-2.5" onChange={e => setFormData({...formData, bukti_pembayaran: e.target.files?.[0] || null})} />
