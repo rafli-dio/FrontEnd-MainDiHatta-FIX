@@ -65,7 +65,7 @@ export default function KaryawanDashboard() {
                     <Card className="bg-blue-50/50 border-blue-100 shadow-sm">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base text-blue-800 flex items-center gap-2">
-                                <HelpCircle className="w-5 h-5" /> SOP Kasir
+                                <HelpCircle className="w-5 h-5" /> SOP Karyawan
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-blue-900/80 space-y-3">
