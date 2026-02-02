@@ -1,6 +1,7 @@
 import Sidebar from '@/components/admin/Sidebar';
 import Header from '@/components/admin/Header';
 import { Toaster } from '@/components/ui/sonner';
+import { AdminProvider } from '@/components/admin/AdminContext';
 
 export const metadata = { title: 'Admin - MainDiHatta.id' };
 
@@ -10,22 +11,21 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            
-
-            <Sidebar />
-
-            <div className="flex-1 md:ml-64 flex flex-col min-h-screen transition-all duration-300">
-          
+        <AdminProvider>
+            <div className="min-h-screen bg-gray-50">
+                
+                <Sidebar />
+                
                 <Header />
 
-                <main className="flex-1 p-6 md:p-8 mt-16 overflow-y-auto">
-                    {children}
-                </main>
+                <div className="pt-16 md:pl-64 min-h-screen flex flex-col transition-all duration-300">
+                    <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+                        {children}
+                    </main>
+                </div>
                 
+                <Toaster />
             </div>
-
-            <Toaster />
-        </div>
+        </AdminProvider>
     );
 }
