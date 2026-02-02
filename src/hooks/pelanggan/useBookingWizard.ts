@@ -209,7 +209,11 @@ export function useBookingWizard() {
             paymentData.append('jumlah_dp', formData.jumlah_dp || totalHarga.toString());
             paymentData.append('bukti_pembayaran', formData.bukti_pembayaran!);
 
-            await axios.post(`/api/bookings/${bookingId}/payment`, paymentData);
+            await axios.post(`/api/bookings/${bookingId}/payment`, paymentData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
 
             toast.success("Booking Berhasil!", { description: "Silakan tunggu konfirmasi admin." });
             

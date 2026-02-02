@@ -20,15 +20,12 @@ export function useBookingAdminPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // 1. Process Auto Finish (Defensive)
     const processAutoFinish = useCallback((data: any[]) => {
-        // Pastikan input benar-benar array
         if (!Array.isArray(data)) return [];
 
         const now = new Date();
 
         return data.map((booking) => {
-            // Safety check: jika booking null/undefined
             if (!booking) return booking;
 
             const bookingEndString = `${booking.tanggal_booking}T${booking.jam_selesai}`;
@@ -39,7 +36,7 @@ export function useBookingAdminPage() {
                     ...booking,
                     status_booking_id: 5, 
                     status_booking: {
-                        ...(booking.status_booking || {}), // Handle jika status_booking null
+                        ...(booking.status_booking || {}), 
                         id: 5,
                         nama_status: 'Selesai', 
                         color: 'success'
@@ -50,19 +47,16 @@ export function useBookingAdminPage() {
         });
     }, []);
 
-    // 2. Fetch Bookings (Anti-Crash)
     const fetchBookings = useCallback(async () => {
         try {
             const response = await axios.get('/api/bookings');
             
-            // --- VALIDASI RESPONS API ---
             const rawData = response.data;
             let safeData: any[] = [];
 
             if (Array.isArray(rawData)) {
                 safeData = rawData;
             } else if (rawData?.data && Array.isArray(rawData.data)) {
-                // Handle Pagination Laravel { data: [...] }
                 safeData = rawData.data;
             } else {
                 console.warn("Format data booking tidak valid:", rawData);
@@ -74,7 +68,6 @@ export function useBookingAdminPage() {
 
         } catch (error) {
             console.error("Fetch error:", error);
-            // JANGAN biarkan bookings undefined/null, set ke empty array
             setBookings([]); 
         } finally {
             setLoading(false);
