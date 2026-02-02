@@ -20,7 +20,7 @@ export default function AboutPage() {
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto space-y-6">
           <span className="inline-block py-1 px-3 rounded-full bg-[#D93F21]/20 border border-[#D93F21] text-[#D93F21] text-xs md:text-sm font-bold tracking-wider uppercase backdrop-blur-sm">
-            Est. 2024
+            Est. 2022
           </span>
           <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
             Main Basket <br/>
