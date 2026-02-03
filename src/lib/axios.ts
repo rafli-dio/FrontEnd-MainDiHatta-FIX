@@ -5,11 +5,10 @@ const axiosInstance: AxiosInstance = axios.create({
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',
-        // 'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
     },
     withCredentials: true, 
 });
-
 axiosInstance.interceptors.request.use((config) => {
     const getCookie = (name: string) => {
         const value = `; ${document.cookie}`;
