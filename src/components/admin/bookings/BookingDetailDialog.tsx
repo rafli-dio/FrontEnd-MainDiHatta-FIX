@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Booking } from '@/types';
 import { 
     CheckCircle, XCircle, Calendar, Clock, User, CreditCard, MapPin, 
-    Info, AlertCircle, Ban, CheckSquare, Loader2, Wallet, Banknote
+    Info, AlertCircle, Ban, CheckSquare, Loader2, Banknote
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -63,6 +63,9 @@ export default function BookingDetailDialog({
     // Helper untuk cek apakah pembayaran tunai/cash
     const isCashPayment = booking.payment_method?.nama_metode.toLowerCase().includes('cash') || 
                           booking.payment_method?.nama_metode.toLowerCase().includes('tunai');
+    
+    // Helper status ID aman (konversi ke Number)
+    const statusId = Number(booking.status_booking_id);
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -71,27 +74,28 @@ export default function BookingDetailDialog({
                     <DialogTitle className="flex items-center gap-3">
                         <span>Booking <span className="font-mono text-gray-500">#{booking.kode_booking}</span></span>
                         
-                        {booking.status_booking_id === 1 && (
+                        {/* BADGE STATUS (Menggunakan statusId yang sudah dikonversi) */}
+                        {statusId === 1 && (
                             <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                                 <AlertCircle className="w-3 h-3 mr-1"/> Menunggu Pembayaran
                             </Badge>
                         )}
-                        {booking.status_booking_id === 2 && (
+                        {statusId === 2 && (
                             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                                 <Clock className="w-3 h-3 mr-1"/> Menunggu Konfirmasi
                             </Badge>
                         )}
-                        {booking.status_booking_id === 3 && (
+                        {statusId === 3 && (
                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                                 <CheckCircle className="w-3 h-3 mr-1"/> Terkonfirmasi
                             </Badge>
                         )}
-                        {booking.status_booking_id === 4 && (
+                        {statusId === 4 && (
                             <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100">
                                 <Ban className="w-3 h-3 mr-1"/> Dibatalkan
                             </Badge>
                         )}
-                        {booking.status_booking_id === 5 && (
+                        {statusId === 5 && (
                             <Badge variant="secondary" className="bg-gray-100 text-gray-600 border-gray-200">
                                 <CheckSquare className="w-3 h-3 mr-1"/> Selesai
                             </Badge>
@@ -209,8 +213,10 @@ export default function BookingDetailDialog({
                         Tutup
                     </Button>
 
-                    {/* Jika status Menunggu Pembayaran (1), Admin bisa Batalkan atau Konfirmasi Manual */}
-                    {booking.status_booking_id === 1 && (
+                    {/* BUTTON AKSI: Menggunakan statusId (Number) agar aman dari bug String ID */}
+                    
+                    {/* Status 1: Menunggu Pembayaran */}
+                    {statusId === 1 && (
                         <>
                             <Button 
                                 variant="destructive" 
@@ -231,8 +237,8 @@ export default function BookingDetailDialog({
                         </>
                     )}
 
-                    {/* Jika status Menunggu Konfirmasi (2), Admin Approve/Reject */}
-                    {booking.status_booking_id === 2 && (
+                    {/* Status 2: Menunggu Konfirmasi */}
+                    {statusId === 2 && (
                         <>
                             <Button 
                                 variant="destructive" 
@@ -253,8 +259,8 @@ export default function BookingDetailDialog({
                         </>
                     )}
 
-                    {/* Jika status Terkonfirmasi (3), Admin bisa Batalkan (Refund/Emergency) atau Tandai Selesai */}
-                    {booking.status_booking_id === 3 && (
+                    {/* Status 3: Terkonfirmasi */}
+                    {statusId === 3 && (
                         <>
                             <Button 
                                 variant="destructive" 
