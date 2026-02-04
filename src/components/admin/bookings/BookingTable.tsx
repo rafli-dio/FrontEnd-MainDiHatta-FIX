@@ -19,7 +19,9 @@ export default function BookingTable({ bookings, onView, loading }: BookingTable
     const formatDate = (dateString: string) => 
         new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-    const getStatusBadge = (id: number) => {
+   const getStatusBadge = (rawId: number | string) => {
+        const id = Number(rawId);
+
         switch(id) {
             case 1: 
                 return (
@@ -52,10 +54,9 @@ export default function BookingTable({ bookings, onView, loading }: BookingTable
                     </Badge>
                 );
             default: 
-                return <Badge variant="secondary">Status: {id}</Badge>;
+                return <Badge variant="secondary">Status: {rawId}</Badge>;
         }
     };
-
     return (
         <div className="rounded-md border bg-white shadow-sm overflow-hidden">
             <Table>
