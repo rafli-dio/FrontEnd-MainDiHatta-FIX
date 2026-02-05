@@ -73,14 +73,13 @@ export default function BookingWizardStep3({ formData, setFormData, paymentMetho
                     <Label>Nama Pengirim</Label>
                     <Input placeholder="masukan nama pengirim" className="h-12 bg-gray-50 border-gray-300 rounded-lg" value={formData.nama_pengirim} onChange={e => setFormData({...formData, nama_pengirim: e.target.value})} />
                 </div>
-                <div className="space-y-2">
+              <div className="space-y-2">
                     <Label>Jumlah Pembayaran</Label>
                     <Input 
                         type="number" 
-                        placeholder="masukan jumlah pembayaran" 
-                        className="h-12 bg-gray-50 border-gray-300 rounded-lg font-bold text-gray-700" 
+                        disabled 
+                        className="h-12 bg-gray-200 border-gray-300 rounded-lg font-bold text-gray-500 cursor-not-allowed opacity-100" 
                         value={formData.jumlah_dp} 
-                        onChange={e => setFormData({...formData, jumlah_dp: e.target.value})} 
                     />
                     <p className="text-xs text-[#D93F21] font-medium mt-1">Total Tagihan: {formatRupiah(totalHarga)}</p>
                 </div>
