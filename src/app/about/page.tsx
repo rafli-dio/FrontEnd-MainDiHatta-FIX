@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { MapPin, Clock, Phone, Trophy, Users, Star, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import Navbar from '@/components/pelanggan/Navbar'; 
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white font-sans mt-[50px]">
-      
-      {/* --- HERO SECTION --- */}
-      <section className="relative h-[400px] md:h-[500px] flex items-center justify-center bg-black overflow-hidden">
-        {/* Background Image */}
+    <div>
+    <Navbar />
+    <div className="min-h-screen bg-white font-sans">
+      <section className="relative h-[400px] md:h-[500px] flex items-center justify-center bg-black overflow-hidden mt-[50px]">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0  bg-cover bg-center opacity-50 grayscale hover:grayscale-0 transition-all duration-700"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
@@ -35,10 +35,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- MISSION & VISION SECTION --- */}
       <section className="py-16 md:py-24 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Kolom Kiri: Teks */}
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
               Lebih Dari Sekadar <span className="text-[#D93F21]">Lapangan.</span>
@@ -70,10 +68,9 @@ export default function AboutPage() {
             </div>
           </div>
           
-          {/* Kolom Kanan: Gambar */}
           <div className="relative h-[400px] rounded-3xl overflow-hidden shadow-2xl group bg-gray-100">
              <Image 
-                src="/images/gambar-basket.jpg" // Pastikan file ini ada di folder public
+                src="/images/gambar-basket.jpg" 
                 alt="Fasilitas Lapangan Basket"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -83,7 +80,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- STATS SECTION --- */}
       <section className="bg-gray-50 py-16 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -95,7 +91,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- LOCATION & INFO SECTION --- */}
       <section className="py-16 md:py-24 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900">Lokasi & Kontak</h2>
@@ -119,7 +114,6 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          {/* Card Jam Operasional */}
           <Card className="border-none shadow-lg hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden">
             <div className="absolute top-0 w-full h-1 bg-[#D93F21]"></div>
             <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
@@ -134,7 +128,6 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          {/* Card Kontak */}
           <Card className="border-none shadow-lg hover:-translate-y-1 transition-transform duration-300">
             <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
               <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center text-green-600">
@@ -151,7 +144,6 @@ export default function AboutPage() {
           </Card>
         </div>
 
-        {/* Google Maps */}
         <div className="mt-12 w-full h-[400px] bg-gray-200 rounded-3xl overflow-hidden relative shadow-inner">
            <iframe 
              src="https://maps.google.com/maps?q=HATTA+SPORT+CENTER+Sukoharjo&t=&z=15&ie=UTF8&iwloc=&output=embed"
@@ -184,6 +176,7 @@ export default function AboutPage() {
         </div>
       </section>
 
+    </div>
     </div>
   );
 }
