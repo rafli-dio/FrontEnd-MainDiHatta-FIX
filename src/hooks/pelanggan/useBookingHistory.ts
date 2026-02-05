@@ -80,9 +80,8 @@ export function useBookingHistory() {
 
     const safeBookings = Array.isArray(bookings) ? bookings : [];
 
-    const activeBookings = safeBookings.filter(b => [1, 2, 3].includes(b.status_booking_id));
-    const historyBookings = safeBookings.filter(b => [4, 5, 6].includes(b.status_booking_id));
-
+    const activeBookings = safeBookings.filter(b => [1, 2, 3].includes(Number(b.status_booking_id)));
+    const historyBookings = safeBookings.filter(b => [4, 5, 6].includes(Number(b.status_booking_id)));
     return {
         bookings: safeBookings, // Return yang aman
         activeBookings,

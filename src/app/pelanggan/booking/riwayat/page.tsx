@@ -23,7 +23,6 @@ export default function BookingHistoryPage() {
     const [selectedBooking, setSelectedBooking] = useState<any>(null);
     const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-    // --- STATE PAGINATION ---
     const [activePage, setActivePage] = useState(1);
     const [historyPage, setHistoryPage] = useState(1);
 
@@ -75,7 +74,7 @@ export default function BookingHistoryPage() {
             <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 pt-4 border-t border-gray-100">
                 <Button
                     variant="outline"
-                    size="icon" // Ganti size="sm" jadi "icon" agar kotak rapi di HP
+                    size="icon"
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className="h-9 w-9 rounded-lg border-gray-300 hover:bg-gray-100"
