@@ -49,14 +49,12 @@ export default function BookingHistoryPage() {
         downloadTicketPDF(booking);
     };
 
-    // --- HELPER: Logic Potong Data (Slicing) ---
     const getPaginatedData = (data: any[], page: number) => {
         const startIndex = (page - 1) * ITEMS_PER_PAGE;
         const endIndex = startIndex + ITEMS_PER_PAGE;
         return data.slice(startIndex, endIndex);
     };
 
-    // --- COMPONENT: Tombol Pagination Responsif ---
     const PaginationControls = ({ 
         currentPage, 
         totalItems, 
@@ -103,7 +101,6 @@ export default function BookingHistoryPage() {
         <div className="min-h-screen bg-[#f8f9fa] pt-20 pb-20 px-4 sm:px-6 md:px-8 font-sans">
             <div className="max-w-4xl mx-auto">
                 
-                {/* Header Section (Responsif) */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
                     <div className="w-full sm:w-auto">
                         <Link href="/pelanggan/home" className="text-gray-500 text-xs sm:text-sm hover:text-[#D93F21] mb-2 flex items-center transition-colors">
@@ -113,7 +110,6 @@ export default function BookingHistoryPage() {
                         <p className="text-gray-500 text-xs sm:text-sm mt-1">Kelola jadwal main dan status pembayaran Anda.</p>
                     </div>
                     
-                    {/* Tombol Booking Baru (Full width di HP) */}
                     <Link href="/pelanggan/booking/create" className="w-full sm:w-auto">
                         <Button className="w-full sm:w-auto bg-[#D93F21] hover:bg-[#b9351b] rounded-xl shadow-lg shadow-orange-200 font-bold h-12 sm:h-10 text-sm sm:text-base transition-transform active:scale-95">
                             <Plus className="w-4 h-4 mr-2" /> Booking Baru
@@ -121,9 +117,7 @@ export default function BookingHistoryPage() {
                     </Link>
                 </div>
 
-                {/* Tabs Section */}
                 <Tabs defaultValue="active" className="w-full">
-                    {/* Tab List: Grid 2 kolom yang rapi di HP */}
                     <TabsList className="grid w-full grid-cols-2 mb-6 sm:mb-8 bg-white p-1.5 rounded-xl border border-gray-200 h-auto shadow-sm">
                         <TabsTrigger 
                             value="active" 
@@ -139,7 +133,6 @@ export default function BookingHistoryPage() {
                         </TabsTrigger>
                     </TabsList>
 
-                    {/* --- TAB BOOKING AKTIF --- */}
                     <TabsContent value="active" className="space-y-4 animate-in fade-in-50 duration-300">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20">
@@ -213,7 +206,6 @@ export default function BookingHistoryPage() {
                                         />
                                     ))}
                                 </div>
-                                {/* Controls Pagination */}
                                 <PaginationControls 
                                     currentPage={historyPage} 
                                     totalItems={historyBookings.length} 
@@ -224,7 +216,6 @@ export default function BookingHistoryPage() {
                     </TabsContent>
                 </Tabs>
 
-                {/* Upload Modal */}
                 <UploadDialog
                     open={isUploadOpen}
                     onOpenChange={setIsUploadOpen}
