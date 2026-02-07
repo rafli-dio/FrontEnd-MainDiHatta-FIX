@@ -29,15 +29,16 @@ export default function BookingCard({
     isUploading = false
 }: BookingCardProps) {
     
+    const statusId = Number(booking.status_booking_id); 
     const durasi = calculateDuration(booking.jam_mulai, booking.jam_selesai);
-    const statusConfig = getStatusConfig(booking.status_booking_id);
+    
+    const statusConfig = getStatusConfig(statusId);
 
     return (
         <Card className={`overflow-hidden border-l-4 ${isHistory ? 'border-l-gray-300 opacity-80' : 'border-l-[#D93F21]'} shadow-sm hover:shadow-md transition-all duration-300 bg-white`}>
             <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row justify-between gap-6">
                     
-                    {/* Informasi Utama */}
                     <div className="flex-1 space-y-3">
                         <div className="flex items-center justify-between md:justify-start gap-3 mb-1">
                             <span className="font-mono text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded border border-gray-200">
@@ -72,20 +73,18 @@ export default function BookingCard({
                         )}
                     </div>
 
-                    {/* Informasi Harga & Aksi */}
                     <div className="flex flex-col justify-between items-end min-w-[150px] border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6 mt-2 md:mt-0">
                         <div className="text-right w-full">
                             <p className="text-xs text-gray-500 mb-1">Total Tagihan</p>
-                            <p className="text-xl font-extrabold text-gray-900">{formatRupiah(booking.total_harga)}</p>
+                            <p className="text-xl font-extrabold text-gray-900">{formatRupiah(Number(booking.total_harga))}</p>
                             <div className="mt-1 text-xs text-gray-500 flex items-center justify-end gap-1">
                                 <CreditCard className="w-3 h-3" /> {booking.payment_method?.nama_metode}
                             </div>
                         </div>
 
-                        {/* TOMBOL AKSI */}
                         <div className="flex flex-col gap-2 w-full mt-6">
                             
-                            {(booking.status_booking_id === 3 || booking.status_booking_id === 5) && (
+                            {(statusId === 3 || statusId === 5) && (
                                 <Button 
                                     size="sm" 
                                     variant="outline" 
@@ -98,7 +97,7 @@ export default function BookingCard({
 
                             {!isHistory && (
                                 <>
-                                    {booking.status_booking_id === 1 && (
+                                    {statusId === 1 && (
                                         <>
                                             <Button 
                                                 size="sm" 
@@ -123,7 +122,9 @@ export default function BookingCard({
                                             </Button>
                                         </>
                                     )}
-                                    {booking.status_booking_id === 2 && (
+
+                                    {/* Status 2: Sedang Diverifikasi */}
+                                    {statusId === 2 && (
                                         <Button 
                                             size="sm" 
                                             variant="secondary" 
@@ -132,7 +133,8 @@ export default function BookingCard({
                                             <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> Sedang Diverifikasi
                                         </Button>
                                     )}
-                                    {booking.status_booking_id === 3 && (
+
+                                    {statusId === 3 && (
                                         <Button 
                                             size="sm" 
                                             variant="outline" 
