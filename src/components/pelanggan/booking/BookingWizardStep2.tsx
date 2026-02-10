@@ -21,25 +21,22 @@ interface BookingWizardStep2Props {
     bookedDates: Date[];
     getJamSelesai: () => string;
     bookings?: Booking[];
-    // 1. Terima Props Jam Operasional
     jamOperasional: { buka: number; tutup: number }; 
 }
 
 export default function BookingWizardStep2({ 
     formData, 
     setFormData, 
-    bookedDates = [], // Default empty array
+    bookedDates = [],
     getJamSelesai, 
     bookings = [],
     jamOperasional = { buka: 8, tutup: 23 } 
 }: BookingWizardStep2Props) {
     
-    // --- PERBAIKAN DI SINI (Defensive Coding) ---
-    // Pastikan bookings selalu berupa Array, meskipun prop yang masuk null/undefined
+ 
     const safeBookings = Array.isArray(bookings) ? bookings : [];
     const safeBookedDates = Array.isArray(bookedDates) ? bookedDates : [];
 
-    // 2. GENERATE SLOT WAKTU DINAMIS
     const totalSlots = jamOperasional.tutup - jamOperasional.buka;
     
     const timeSlots = Array.from({ length: totalSlots }, (_, i) => {
@@ -47,17 +44,14 @@ export default function BookingWizardStep2({
         return `${hour.toString().padStart(2, '0')}:00`;
     });
 
-    // 3. Update logika Max Duration agar tidak crash
     const getMaxDuration = () => {
         if (!formData.jam_mulai || !formData.tanggal_booking) return 5; 
 
         const dateStr = format(new Date(formData.tanggal_booking), 'yyyy-MM-dd');
         const startHour = parseInt(formData.jam_mulai.split(':')[0]);
 
-        // Gunakan safeBookings (Bukan bookings mentah)
         const nextBookings = safeBookings
             .filter(b => {
-                // Tambahkan pengecekan b?.tanggal_booking
                 if (!b?.tanggal_booking) return false;
                 const bDate = format(new Date(b.tanggal_booking), 'yyyy-MM-dd');
                 return bDate === dateStr && b.status_booking_id !== 4;
@@ -72,7 +66,6 @@ export default function BookingWizardStep2({
             return Math.min(gap, 5);
         }
 
-        // Cek sisa waktu sampai TUTUP LAPANGAN
         const closingHour = jamOperasional.tutup;
         const timeLeft = closingHour - startHour;
         
@@ -80,7 +73,6 @@ export default function BookingWizardStep2({
     };
 
     const maxDuration = getMaxDuration();
-    // ------------------------------------------
 
     const isTimePassed = (time: string) => {
         if (!formData.tanggal_booking) return false;
@@ -104,9 +96,8 @@ export default function BookingWizardStep2({
         const dateStr = format(new Date(formData.tanggal_booking), 'yyyy-MM-dd');
         const slotHour = parseInt(time.split(':')[0]);
 
-        // Gunakan safeBookings (Bukan bookings mentah)
         return safeBookings.some(booking => {
-            if (!booking?.tanggal_booking) return false; // Safety check
+            if (!booking?.tanggal_booking) return false; 
 
             const bookingDateStr = format(new Date(booking.tanggal_booking), 'yyyy-MM-dd');
             if (bookingDateStr !== dateStr || booking.status_booking_id === 4) return false;
@@ -149,7 +140,6 @@ export default function BookingWizardStep2({
     return (
         <div className="space-y-6 max-w-lg animate-in slide-in-from-right-4 duration-300">
             
-            {/* INPUT TANGGAL */}
             <div className="space-y-2">
                 <Label>Tanggal Main</Label>
                 <Popover>
@@ -177,7 +167,6 @@ export default function BookingWizardStep2({
                                 onSelect={handleDateSelect}
                                 initialFocus
                                 disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                                // Gunakan safeBookedDates
                                 modifiers={{ booked: safeBookedDates }}
                                 modifiersStyles={{ booked: { color: '#D93F21', fontWeight: 'bold', textDecoration: 'underline' } }}
                                 className="rounded-md border-none"
@@ -187,12 +176,10 @@ export default function BookingWizardStep2({
                 </Popover>
             </div>
 
-            {/* SLOT WAKTU GRID */}
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
                     <Label>Pilih Jam Mulai</Label>
                     <div className="flex items-center gap-2">
-                         {/* Info Jam Operasional */}
                         <span className="text-[10px] px-2 py-1 bg-gray-100 rounded-full text-gray-500 font-medium">
                             Buka: {jamOperasional.buka}:00 - {jamOperasional.tutup}:00
                         </span>
