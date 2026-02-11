@@ -22,17 +22,14 @@ interface BookingWizardStep3Props {
 
 export default function BookingWizardStep3({ formData, setFormData, paymentMethods, totalHarga }: BookingWizardStep3Props) {
     
-    // 2. Tambahkan useEffect untuk auto-fill jumlah pembayaran
     useEffect(() => {
-        // Hanya update jika totalHarga valid dan formData belum diisi manual (opsional, bisa dihapus if-nya kalau mau selalu paksa update)
         if (totalHarga > 0) {
             setFormData({
                 ...formData,
-                jumlah_dp: totalHarga.toString() // Konversi ke string karena Input value biasanya string
+                jumlah_dp: totalHarga.toString() 
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [totalHarga]); // Trigger efek setiap kali totalHarga berubah
+    }, [totalHarga]); 
 
     const formatRupiah = (num: number) => 
         new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
