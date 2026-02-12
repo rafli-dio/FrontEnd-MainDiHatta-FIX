@@ -43,10 +43,8 @@ export function useBookingWizard() {
         bukti_pembayaran: null as File | null,
     });
 
-    // --- 1. INITIAL FETCH (DEFENSIVE) ---
     useEffect(() => {
         const initData = async () => {
-            // Auto-fill form jika user login
             if (user) {
                 setFormData(prev => ({
                     ...prev,
@@ -58,20 +56,17 @@ export function useBookingWizard() {
             }
 
             try {
-                // Fetch All Data
                 const [resLap, resPay, resBook] = await Promise.all([
                     axios.get('/api/lapangans'),
                     axios.get('/api/paymentMethods'),
                     axios.get('/api/bookings')
                 ]);
 
-                // --- Helper Safe Array ---
                 const getSafeArray = (res: any) => {
                     const data = res.data?.data || res.data;
                     return Array.isArray(data) ? data : [];
                 };
 
-                // 1. Lapangan Logic
                 const lapData = getSafeArray(resLap);
                 if (lapData.length > 0) {
                     const lap = lapData[0]; 
@@ -86,14 +81,11 @@ export function useBookingWizard() {
                     }
                 }
 
-                // 2. Payment Methods Logic
                 const payData = getSafeArray(resPay);
                 setPaymentMethods(payData.filter((p: any) => p?.is_aktif));
 
-                // 3. Bookings Logic
                 const bookData = getSafeArray(resBook);
                 
-                // Safe filtering booked dates
                 const dates = bookData
                     .filter((b: Booking) => b?.status_booking_id !== 4 && b?.tanggal_booking)
                     .map((b: Booking) => new Date(b.tanggal_booking));
@@ -104,7 +96,6 @@ export function useBookingWizard() {
             } catch (error: any) {
                 console.error("Gagal memuat data:", error);
                 toast.error("Gagal memuat data booking. Silakan refresh.");
-                // Reset state agar aman
                 setBookedDates([]);
                 setBookings([]);
             }
@@ -113,7 +104,6 @@ export function useBookingWizard() {
         initData();
     }, [user, urlDate]); 
 
-    // --- 3. Helpers (Safe Access) ---
     const getJamSelesai = () => {
         if (!formData.jam_mulai) return '--:--';
         const [hours, minutes] = formData.jam_mulai.split(':').map(Number);
@@ -124,7 +114,6 @@ export function useBookingWizard() {
 
     const totalHarga = Number(formData.durasi_jam) * hargaPerJam;
 
-    // Cek Bentrok (Safe)
     const checkConflict = () => {
         if (!formData.tanggal_booking || !formData.jam_mulai) return false;
 
@@ -135,7 +124,6 @@ export function useBookingWizard() {
         const safeBookings = Array.isArray(bookings) ? bookings : [];
 
         return safeBookings.some(booking => {
-            // Safety Check
             if (!booking || !booking.tanggal_booking || !booking.jam_mulai) return false;
 
             if (booking.tanggal_booking !== dateStr || booking.status_booking_id === 4) return false;
