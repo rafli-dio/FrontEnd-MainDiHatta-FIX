@@ -75,7 +75,7 @@ export const useNotifications = (userId: number | string | undefined) => {
         setNotifications(prev => (prev || []).map(n => ({ ...n, is_read: true })));
         
         try {
-            await axios.post('/notifications/read-all', {}, {
+            await axios.post('/api/notifications/read-all', {}, {
                 params: { user_id: userId }
             });
             toast.success("Semua notifikasi ditandai sudah dibaca");
