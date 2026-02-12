@@ -83,15 +83,13 @@ export function useBookingAdminPage() {
     }, [fetchBookings]);
 
     // 3. Filter & Search (Safe Logic)
-    // Pastikan bookings selalu array sebelum difilter
     const safeBookings = Array.isArray(bookings) ? bookings : [];
 
     const filteredBookings = safeBookings.filter(item => {
-        if (!item) return false; // Safety check
+        if (!item) return false; 
 
         const searchLower = searchQuery.toLowerCase();
         
-        // Gunakan Optional Chaining (?.) untuk mencegah crash jika property hilang
         const matchSearch = 
             item.kode_booking?.toLowerCase().includes(searchLower) || 
             item.user?.name?.toLowerCase().includes(searchLower) ||
@@ -178,7 +176,7 @@ export function useBookingAdminPage() {
 
     return {
         bookings: currentItems,
-        allBookings: safeBookings, // Gunakan safeBookings
+        allBookings: safeBookings,
         loading,
         totalData,
         viewMode, setViewMode,
