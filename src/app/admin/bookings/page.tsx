@@ -24,30 +24,19 @@ import BookingCalendarView from '@/components/admin/bookings/BookingCalendarView
 
 export default function BookingAdminPage() {
     const {
-        // Data & State
-        bookings,           // Data paginated untuk tabel
+        bookings,          
         loading,
-        totalData,          // Total data setelah filter
-        
-        // View State
+        totalData,         
         viewMode,
         setViewMode,
-
-        // Filters
         searchQuery, setSearchQuery,
         filterStatus, setFilterStatus,
-        
-        // Calendar Data
         selectedDate, setSelectedDate,
         bookingsOnSelectedDate,
         bookedDays,
-
-        // Pagination
         currentPage,
         totalPages,
         handlePageChange,
-
-        // Dialog & Actions
         selectedBooking,
         isDialogOpen, setIsDialogOpen,
         isProcessing,
@@ -58,9 +47,8 @@ export default function BookingAdminPage() {
     } = useBookingAdminPage();
 
     return (
-        <div className="space-y-6 pb-20 p-6"> {/* Tambahkan padding container */}
+        <div className="space-y-6 pb-20 p-6"> 
             
-            {/* --- HEADER SECTION --- */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Manajemen Booking</h1>
@@ -87,7 +75,6 @@ export default function BookingAdminPage() {
                 </div>
             </div>
 
-            {/* --- TABS VIEW SWITCHER --- */}
             <Tabs defaultValue="table" value={viewMode} onValueChange={setViewMode} className="w-full">
                 <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6 p-1 bg-gray-100/80">
                     <TabsTrigger value="table" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
@@ -98,10 +85,8 @@ export default function BookingAdminPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                {/* --- VIEW 1: TABLE LIST --- */}
                 <TabsContent value="table" className="space-y-6 mt-0 animate-in fade-in-50 duration-300">
                     
-                    {/* Filter Component */}
                     <BookingFilters 
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
@@ -109,7 +94,6 @@ export default function BookingAdminPage() {
                         setFilterStatus={setFilterStatus}
                     />
 
-                    {/* Table Container */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <BookingTable 
                             bookings={bookings}
@@ -117,7 +101,6 @@ export default function BookingAdminPage() {
                             onView={handleViewDetail}
                         />
                         
-                        {/* Pagination Controls */}
                         {!loading && totalData > 0 && (
                             <div className="flex items-center justify-between p-4 border-t bg-gray-50/50">
                                 <div className="text-sm text-gray-500">
@@ -151,7 +134,6 @@ export default function BookingAdminPage() {
                     </div>
                 </TabsContent>
 
-                {/* --- VIEW 2: CALENDAR --- */}
                 <TabsContent value="calendar" className="mt-0 animate-in fade-in-50 duration-300">
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
                         <BookingCalendarView 
@@ -165,7 +147,6 @@ export default function BookingAdminPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* --- SHARED DIALOG DETAIL --- */}
             <BookingDetailDialog 
                 isOpen={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
