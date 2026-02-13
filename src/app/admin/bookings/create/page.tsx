@@ -1,6 +1,4 @@
 'use client';
-
-// 1. Tambahkan import Suspense dari 'react'
 import { Suspense } from 'react'; 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';

@@ -222,16 +222,19 @@ export function useCreateBookingForm() {
   };
 
   const handleSubmit = async () => {
+    // 1. Validasi Input Wajib
     if (!formData.lapangan_id || !formData.tanggal_booking || !formData.jam_mulai) {
       return toast.error('Isi semua field jadwal (lapangan, tanggal, jam mulai).');
     }
 
+    // 2. Validasi User (Manual vs Member)
     if (isManualBooking) {
       if (!formData.nama_pengirim) return toast.error('Isi nama pelanggan untuk booking manual.');
     } else {
       if (!formData.user_id) return toast.error('Pilih member / user untuk booking.');
     }
 
+    // 3. Validasi Bentrok Client-Side (Double Check)
     if (isTimeSlotBooked(formData.jam_mulai)) {
         return toast.error('Jam yang dipilih sudah terisi. Silakan pilih jam lain.');
     }
@@ -257,23 +260,29 @@ export function useCreateBookingForm() {
       }
 
       const res = await axios.post('/api/bookings', payload);
+      
       const bookingId = res.data?.data?.id || res.data.id;
 
       if (formData.bukti_pembayaran) {
           const fileData = new FormData();
           fileData.append('bukti_pembayaran', formData.bukti_pembayaran);
           if (formData.jumlah_dp) fileData.append('jumlah_dp', formData.jumlah_dp);
-          await axios.post(`/api/bookings/${bookingId}/payment`, fileData);
+          
+          await axios.post(`/api/bookings/${bookingId}/payment`, fileData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+          });
       }
 
+  
       if (formData.status_booking_id && String(formData.status_booking_id) !== '1' && String(formData.status_booking_id) !== '2') {
           await axios.patch(`/api/bookings/${bookingId}/status`, {
-              status_booking_id: parseInt(String(formData.status_booking_id))
+            status_booking_id: parseInt(String(formData.status_booking_id))
           });
       }
 
       toast.success('Booking berhasil dibuat.');
-      router.push('/admin/bookings');
+      
+      router.push(`/admin/bookings/success?id=${bookingId}`);
 
     } catch (error: any) {
       const status = error.response?.status;
