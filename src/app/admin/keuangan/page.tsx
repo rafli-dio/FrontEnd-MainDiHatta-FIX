@@ -1,28 +1,24 @@
 'use client';
 
-// 1. Import Custom Hook
 import { useKeuanganPage } from '@/hooks/admin/useKeuanganPage';
 
-// 2. Import Komponen UI
 import KeuanganFilters from '@/components/admin/keuangan/KeuanganFilters';
 import KeuanganStatsCards from '@/components/admin/keuangan/KeuanganStatsCards';
 import KeuanganJurnalTable from '@/components/admin/keuangan/KeuanganJurnalTable';
 
 export default function KeuanganPage() {
-    // 3. Panggil Logika dari Hook
-    const { 
-        // Data & Totals
+   const { 
         filteredTransactions,
         filteredPemasukan,
         loading,
-        
-        // Filters State
+        filterMode,
+        setFilterMode,
+        selectedDate,
+        setSelectedDate,
         selectedMonth,
         setSelectedMonth,
         selectedYear,
         setSelectedYear,
-        
-        // Actions & Helpers
         handleExportExcel,
         handlePrint,
         formatRupiah,
@@ -32,8 +28,11 @@ export default function KeuanganPage() {
 
     return (
         <div className="space-y-8 pb-20">
-            {/* 1. Header & Filters */}
             <KeuanganFilters 
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
                 selectedYear={selectedYear}
@@ -43,13 +42,11 @@ export default function KeuanganPage() {
                 currentYear={currentYear}
             />
 
-            {/* 2. Kartu Statistik Ringkasan */}
             <KeuanganStatsCards 
                 pemasukan={filteredPemasukan}
                 formatRupiah={formatRupiah}
             />
 
-            {/* 3. Tabel Jurnal */}
             <KeuanganJurnalTable 
                 loading={loading}
                 transactions={filteredTransactions}
@@ -57,7 +54,6 @@ export default function KeuanganPage() {
                 formatDate={formatDate}
             />
 
-            {/* CSS Khusus Print (Agar Layout Bagus saat diprint) */}
             <style jsx global>{`
                 @media print {
                     /* Sembunyikan elemen navigasi saat print */

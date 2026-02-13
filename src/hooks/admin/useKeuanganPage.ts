@@ -5,7 +5,6 @@ import axios from '@/lib/axios';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
-// Definisi Tipe Data Lokal (jika belum ada di global types)
 export interface JenisTransaksi {
     nama_jenis: string;
     tipe: 'masuk' | 'keluar';
@@ -28,26 +27,24 @@ export interface LaporanResponse {
 }
 
 export function useKeuanganPage() {
-    // State Data
     const [laporan, setLaporan] = useState<LaporanResponse | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // State Filter
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
+    
+    const [filterMode, setFilterMode] = useState<'monthly' | 'daily'>('monthly');
+    
     const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth.toString());
     const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
+    const [selectedDate, setSelectedDate] = useState<string>('');
 
-    // 1. Fetch Data (Defensive)
     const fetchLaporan = async () => {
         setLoading(true);
         try {
             const response = await axios.get('/api/laporan/jurnal');
-            
-            // Validasi Data Response
             const rawData = response.data?.data || response.data;
             if (rawData) {
-                // Pastikan detail_jurnal adalah array
                 setLaporan({
                     ...rawData,
                     detail_jurnal: Array.isArray(rawData.detail_jurnal) ? rawData.detail_jurnal : []
@@ -68,30 +65,33 @@ export function useKeuanganPage() {
         fetchLaporan();
     }, []);
 
-    // 2. Logic Filter Client-Side (Defensive)
-    // Gunakan array kosong jika detail_jurnal undefined/null
     const safeTransactions = laporan?.detail_jurnal || [];
 
     const filteredTransactions = safeTransactions.filter(item => {
-        // Safety check per item
         if (!item || !item.tanggal_transaksi || !item.jenis_transaksi) return false;
 
-        const date = new Date(item.tanggal_transaksi);
-        const itemMonth = date.getMonth() + 1;
-        const itemYear = date.getFullYear();
-
-        const matchMonth = selectedMonth === 'all' || itemMonth.toString() === selectedMonth;
-        const matchYear = itemYear.toString() === selectedYear;
-        // Hanya transaksi masuk (pemasukan)
         const matchType = item.jenis_transaksi.tipe === 'masuk';
+        if (!matchType) return false;
 
-        return matchMonth && matchYear && matchType;
+        const trxDate = new Date(item.tanggal_transaksi);
+        
+        if (filterMode === 'daily') {
+            if (!selectedDate) return true; 
+            const itemDateStr = item.tanggal_transaksi.split('T')[0]; 
+            return itemDateStr === selectedDate;
+        } else {
+            const itemMonth = trxDate.getMonth() + 1;
+            const itemYear = trxDate.getFullYear();
+            
+            const matchMonth = selectedMonth === 'all' || itemMonth.toString() === selectedMonth;
+            const matchYear = itemYear.toString() === selectedYear;
+            
+            return matchMonth && matchYear;
+        }
     });
 
-    // 3. Kalkulasi Total - Hanya pemasukan
     const filteredPemasukan = filteredTransactions.reduce((sum, item) => sum + Number(item.kredit || 0), 0);
 
-    // 4. Helpers
     const formatRupiah = (angka: number) => {
         return new Intl.NumberFormat('id-ID', { 
             style: 'currency', 
@@ -107,7 +107,6 @@ export function useKeuanganPage() {
         });
     };
 
-    // 5. Handle Export Excel
     const handleExportExcel = () => {
         if (filteredTransactions.length === 0) {
             toast.error("Tidak ada data untuk diexport.");
@@ -126,14 +125,18 @@ export function useKeuanganPage() {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Jurnal Umum");
 
+        const periodeLabel = filterMode === 'daily' 
+            ? `Harian: ${selectedDate}` 
+            : `Bulanan: ${selectedMonth === 'all' ? 'Setahun' : selectedMonth}/${selectedYear}`;
+
         const summaryData = [
-            { 'Keterangan': 'Periode', 'Nilai': `${selectedMonth === 'all' ? 'Setahun' : selectedMonth}/${selectedYear}` },
+            { 'Keterangan': 'Periode', 'Nilai': periodeLabel },
             { 'Keterangan': 'Total Pemasukan', 'Nilai': filteredPemasukan },
         ];
         const summarySheet = XLSX.utils.json_to_sheet(summaryData);
         XLSX.utils.book_append_sheet(workbook, summarySheet, "Ringkasan");
 
-        const fileName = `Laporan_Keuangan_${selectedYear}_${selectedMonth}.xlsx`;
+        const fileName = `Laporan_Keuangan_${filterMode === 'daily' ? selectedDate : `${selectedYear}_${selectedMonth}`}.xlsx`;
         XLSX.writeFile(workbook, fileName);
         
         toast.success("Laporan berhasil diunduh!");
@@ -147,6 +150,10 @@ export function useKeuanganPage() {
         filteredTransactions,
         filteredPemasukan,
         loading,
+        filterMode,
+        setFilterMode,
+        selectedDate,
+        setSelectedDate,
         selectedMonth,
         setSelectedMonth,
         selectedYear,
