@@ -48,16 +48,23 @@ export default function BookingWizardStep3({ formData, setFormData, paymentMetho
                 </div>
             </div>
 
-            {/* --- Form Input --- */}
             <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label>Jenis Pembayaran</Label>
                     <Select onValueChange={(v) => setFormData({...formData, payment_method_id: v})} value={formData.payment_method_id?.toString()}>
                         <SelectTrigger className="h-12 bg-gray-50 border-gray-300 rounded-lg"><SelectValue placeholder="Pilih Bank" /></SelectTrigger>
                         <SelectContent>
-                            {paymentMethods.map(method => (
-                                <SelectItem key={method.id} value={method.id.toString()}>{method.nama_metode}</SelectItem>
-                            ))}
+                            {paymentMethods
+                                .filter(method => {
+                                    const name = method.nama_metode.toLowerCase();
+                                    return !name.includes('cash') && !name.includes('tunai');
+                                })
+                                .map(method => (
+                                    <SelectItem key={method.id} value={method.id.toString()}>
+                                        {method.nama_metode}
+                                    </SelectItem>
+                                ))
+                            }
                         </SelectContent>
                     </Select>
                 </div>
