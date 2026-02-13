@@ -18,10 +18,10 @@ type MenuItem = { title: string; href?: string; icon: any; submenu?: SubMenuItem
 
 const baseMenuItems: MenuItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { title: 'Data Lapangan', href: '/admin/lapangan', icon: Box },
     { 
         title: 'Data Master', icon: Settings,
         submenu: [
+            { title: 'Data Lapangan', href: '/admin/lapangan', icon: Box },
             { title: 'Metode Pembayaran', href: '/admin/master/payment-method', icon: Wallet },
             { title: 'Status Booking', href: '/admin/master/status-booking', icon: Info },
         ]
