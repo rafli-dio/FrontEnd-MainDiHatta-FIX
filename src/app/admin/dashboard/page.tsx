@@ -2,13 +2,11 @@
 
 import { useAdminDashboard } from '@/hooks/admin/useAdminDashboard';
 
-// Import Komponen UI Pecahan
 import DashboardStats from '@/components/admin/dashboard/DashboardStats';
 import DashboardChart from '@/components/admin/dashboard/DashboardChart';
 import DashboardRecentActivity from '@/components/admin/dashboard/DashboardRecentActivity';
 
 export default function AdminDashboard() {
-    // Panggil logika dari Custom Hook
     const { data, chartData, loading, formatRupiah } = useAdminDashboard();
 
     if (loading) {
@@ -33,21 +31,17 @@ export default function AdminDashboard() {
 
     return (
         <div className="space-y-6 pb-10">
-            {/* Header */}
             <div className="flex flex-col gap-1">
                 <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
                 <p className="text-gray-500">Ringkasan aktivitas booking lapangan MainDiHatta hari ini.</p>
             </div>
             
-            {/* Statistik Cards */}
             <DashboardStats 
                 summary={data?.summary} 
                 formatRupiah={formatRupiah} 
             />
 
-            {/* Chart & Activity Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* Chart Section - Lebih lebar */}
                 <div className="lg:col-span-3">
                     <DashboardChart 
                         data={chartData} 
@@ -55,7 +49,6 @@ export default function AdminDashboard() {
                     />
                 </div>
                 
-                {/* Activity Section - Lebih sempit */}
                 <div className="lg:col-span-2">
                     <DashboardRecentActivity 
                         activities={data?.recent_activity} 

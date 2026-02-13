@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import axios from '@/lib/axios';
 
-// Definisi Tipe Data
 export interface DashboardData {
     summary: {
         pendapatan_hari_ini: number | string;
@@ -33,7 +32,6 @@ export function useAdminDashboard() {
     const [chartData, setChartData] = useState<ProcessedChartData[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Helper Format Rupiah
     const formatRupiah = (angka: number | string) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -42,7 +40,6 @@ export function useAdminDashboard() {
         }).format(Number(angka));
     };
 
-    // Helper Process Chart Data
     const processChartData = (apiData: any) => {
         const today = new Date();
         const dayIndex = (today.getDay() + 6) % 7; 
@@ -59,7 +56,6 @@ export function useAdminDashboard() {
             totalsMap[dateStr] = (totalsMap[dateStr] || 0) + (Number(value) || 0);
         };
 
-        // Normalisasi data dari API (Array atau Object)
         if (Array.isArray(apiData)) {
             apiData.forEach((c: any) => {
                 const possible = c?.date ?? c?.name ?? c?.label ?? c?.day ?? null;
