@@ -13,11 +13,10 @@ import BookingWizardStep2 from '@/components/pelanggan/booking/BookingWizardStep
 import BookingWizardStep3 from '@/components/pelanggan/booking/BookingWizardStep3';
 
 function BookingWizardContent() {
-    // 1. Ambil data dari hook, TERMASUK jamOperasional
     const {
         step, isSubmitting, formData, setFormData,
         bookedDates, bookings, paymentMethods, totalHarga,
-        jamOperasional, // <--- Data Jam Buka/Tutup dari Database
+        jamOperasional, 
         getJamSelesai, nextStep, prevStep, handleSubmit
     } = useBookingWizard();
 
@@ -28,7 +27,6 @@ function BookingWizardContent() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 font-sans pb-20">
             
-            {/* --- MOBILE STEPPER (Sticky Top) --- */}
             <div className="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 px-4 shadow-sm mb-6">
                 <BookingWizardStepper currentStep={step} />
             </div>
@@ -36,18 +34,15 @@ function BookingWizardContent() {
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-12">
                 <div className="flex flex-col lg:flex-row gap-8 md:gap-12 lg:gap-16">
                     
-                    {/* --- DESKTOP STEPPER (Sticky Sidebar) --- */}
                     <div className="hidden lg:block lg:w-1/4">
                         <div className="sticky top-24">
                             <BookingWizardStepper currentStep={step} />
                         </div>
                     </div>
 
-                    {/* --- BAGIAN KANAN: FORM --- */}
                     <div className="flex-1 max-w-3xl">
                         <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 md:p-8 mb-8 md:mb-10 transition-all duration-300">
                             
-                            {/* Header Judul Step */}
                             <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
                                 <div className="w-1.5 h-10 bg-gradient-to-b from-[#D93F21] to-[#FF6B35] rounded-full"></div>
                                 <div>
@@ -64,7 +59,6 @@ function BookingWizardContent() {
                                 </div>
                             </div>
 
-                            {/* Conditional Step Rendering */}
                             <div className="min-h-[300px]">
                                 {step === 1 && (
                                     <BookingWizardStep1 
@@ -79,7 +73,7 @@ function BookingWizardContent() {
                                         bookedDates={bookedDates}
                                         getJamSelesai={getJamSelesai}
                                         bookings={bookings}
-                                        jamOperasional={jamOperasional} // <--- 2. KIRIM PROPS KE STEP 2
+                                        jamOperasional={jamOperasional} 
                                     />
                                 )}
                                 {step === 3 && (
@@ -92,10 +86,8 @@ function BookingWizardContent() {
                                 )}
                             </div>
 
-                            {/* --- ACTION BUTTONS --- */}
                             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-4 mt-10 pt-6 border-t border-gray-100">
                                 
-                                {/* Tombol Cancel / Kembali */}
                                 {step > 1 ? (
                                     <Button 
                                         variant="outline" 
@@ -115,7 +107,6 @@ function BookingWizardContent() {
                                     </Link>
                                 )}
 
-                                {/* Tombol Next / Submit */}
                                 {step < 3 ? (
                                     <Button 
                                         onClick={nextStep}
@@ -135,7 +126,6 @@ function BookingWizardContent() {
                             </div>
                         </div>
                         
-                        {/* Footer text kecil */}
                         <p className="text-center text-xs text-gray-400 mt-6">
                             &copy; 2026 Hatta Sport Center. Semua hak dilindungi.
                         </p>
@@ -146,7 +136,6 @@ function BookingWizardContent() {
     );
 }
 
-// --- MAIN EXPORT ---
 export default function BookingWizardPage() {
     return (
         <Suspense fallback={
