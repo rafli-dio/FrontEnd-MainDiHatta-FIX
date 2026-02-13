@@ -82,24 +82,45 @@ export function useBookingAdminPage() {
         return () => clearInterval(interval);
     }, [fetchBookings]);
 
-    // 3. Filter & Search (Safe Logic)
+    // 3. Filter & Search & SORT (Logic Baru)
     const safeBookings = Array.isArray(bookings) ? bookings : [];
 
-    const filteredBookings = safeBookings.filter(item => {
-        if (!item) return false; 
+    const filteredBookings = safeBookings
+        .filter(item => {
+            if (!item) return false; 
 
-        const searchLower = searchQuery.toLowerCase();
-        
-        const matchSearch = 
-            item.kode_booking?.toLowerCase().includes(searchLower) || 
-            item.user?.name?.toLowerCase().includes(searchLower) ||
-            (item.nama_pengirim && item.nama_pengirim.toLowerCase().includes(searchLower)) ||
-            false;
+            const searchLower = searchQuery.toLowerCase();
             
-        const matchStatus = filterStatus === 'all' || item.status_booking_id?.toString() === filterStatus;
-        
-        return matchSearch && matchStatus;
-    });
+            const matchSearch = 
+                item.kode_booking?.toLowerCase().includes(searchLower) || 
+                item.user?.name?.toLowerCase().includes(searchLower) ||
+                (item.nama_pengirim && item.nama_pengirim.toLowerCase().includes(searchLower)) ||
+                false;
+                
+            const matchStatus = filterStatus === 'all' || item.status_booking_id?.toString() === filterStatus;
+            
+            return matchSearch && matchStatus;
+        })
+        .sort((a, b) => {
+            const dateA = new Date(`${a.tanggal_booking}T${a.jam_mulai}`);
+            const dateB = new Date(`${b.tanggal_booking}T${b.jam_mulai}`);
+            const now = new Date();
+
+            const diffA = dateA.getTime() - now.getTime();
+            const diffB = dateB.getTime() - now.getTime();
+
+            const isFutureA = diffA >= 0;
+            const isFutureB = diffB >= 0;
+
+            if (isFutureA && !isFutureB) return -1; 
+            if (!isFutureA && isFutureB) return 1;
+
+            if (isFutureA && isFutureB) {
+                return diffA - diffB;
+            }
+
+            return diffB - diffA; 
+        });
 
     // Pagination Logic
     const totalData = filteredBookings.length;
