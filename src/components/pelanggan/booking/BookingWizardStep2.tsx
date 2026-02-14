@@ -63,13 +63,13 @@ export default function BookingWizardStep2({
         if (nextBookings.length > 0) {
             const nextBookingStart = nextBookings[0];
             const gap = nextBookingStart - startHour;
-            return Math.min(gap, 5);
+            return gap
         }
 
         const closingHour = jamOperasional.tutup;
         const timeLeft = closingHour - startHour;
         
-        return Math.min(timeLeft, 5);
+        return timeLeft;
     };
 
     const maxDuration = getMaxDuration();

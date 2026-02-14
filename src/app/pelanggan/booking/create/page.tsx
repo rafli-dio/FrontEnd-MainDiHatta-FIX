@@ -120,7 +120,7 @@ function BookingWizardContent() {
                                         disabled={isSubmitting}
                                         className="w-full sm:w-auto min-w-[160px] bg-gradient-to-r from-[#D93F21] to-[#FF6B35] hover:from-[#b9351b] hover:to-[#E55A25] text-white rounded-xl h-12 font-bold shadow-lg shadow-orange-200 hover:shadow-orange-300 transform hover:-translate-y-0.5 transition-all duration-300"
                                     >
-                                        {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : "Konfirmasi Booking"}
+                                        {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : "Booking"}
                                     </Button>
                                 )}
                             </div>
