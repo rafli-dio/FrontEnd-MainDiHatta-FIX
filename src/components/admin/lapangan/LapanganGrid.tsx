@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Pencil, Trash2, MapPin, Clock, AlertCircle } from 'lucide-react';
+import { Pencil, Trash2, MapPin, Clock, AlertCircle, CalendarX } from 'lucide-react'; // Tambah Icon CalendarX
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,13 +13,15 @@ interface LapanganGridProps {
     lapangans: Lapangan[];
     onEdit: (item: Lapangan) => void;
     onDelete: (id: number) => void;
+    onManageMaintenance: (id: number) => void; // <--- NEW PROP
 }
 
 export default function LapanganGrid({
     loading,
     lapangans,
     onEdit,
-    onDelete
+    onDelete,
+    onManageMaintenance // <--- TERIMA PROP
 }: LapanganGridProps) {
 
     const formatRupiah = (num: number | string) => 
@@ -51,8 +53,8 @@ export default function LapanganGrid({
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {lapangans.map((item) => (
-                <Card key={item.id} className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-gray-200">
-                    <div className="relative h-48 w-full bg-gray-100">
+                <Card key={item.id} className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-gray-200 flex flex-col">
+                    <div className="relative h-48 w-full bg-gray-100 shrink-0">
                         {item.foto_url ? (
                             <Image 
                                 src={item.foto_url} 
@@ -75,32 +77,47 @@ export default function LapanganGrid({
                         </div>
                     </div>
                     
-                    <CardContent className="p-5 space-y-4">
-                        <div>
-                            <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-[#D93F21]" /> {item.nama_lapangan}
-                            </h3>
-                            <p className="text-sm text-gray-500 line-clamp-2 mt-1 min-h-[40px]">
-                                {item.deskripsi || 'Tidak ada deskripsi.'}
-                            </p>
+                    <CardContent className="p-5 flex flex-col flex-1">
+                        <div className="flex-1 space-y-4">
+                            <div>
+                                <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">
+                                    <MapPin className="w-5 h-5 text-[#D93F21]" /> {item.nama_lapangan}
+                                </h3>
+                                <p className="text-sm text-gray-500 line-clamp-2 mt-1 min-h-[40px]">
+                                    {item.deskripsi || 'Tidak ada deskripsi.'}
+                                </p>
+                            </div>
+
+                            <div className="flex justify-between items-center text-sm border-t pt-4 border-gray-100">
+                                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-2 py-1 rounded-md">
+                                    <Clock className="w-4 h-4" />
+                                    <span>{item.jam_buka?.substring(0, 5)} - {item.jam_tutup?.substring(0, 5)}</span>
+                                </div>
+                                <div className="font-bold text-[#D93F21] text-lg">
+                                    {formatRupiah(item.harga_per_jam)} <span className="text-xs text-gray-400 font-normal">/jam</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="flex justify-between items-center text-sm border-t pt-4 border-gray-100">
-                            <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-2 py-1 rounded-md">
-                                <Clock className="w-4 h-4" />
-                                <span>{item.jam_buka.substring(0, 5)} - {item.jam_tutup.substring(0, 5)}</span>
-                            </div>
-                            <div className="font-bold text-[#D93F21] text-lg">
-                                {formatRupiah(item.harga_per_jam)} <span className="text-xs text-gray-400 font-normal">/jam</span>
-                            </div>
-                        </div>
+                        {/* TOMBOL ACTION */}
+                        <div className="flex gap-2 pt-4 mt-auto">
+                            {/* Tombol Atur Libur (Baru) */}
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                                onClick={() => onManageMaintenance(item.id)}
+                                title="Atur Jadwal Libur"
+                            >
+                                <CalendarX className="w-4 h-4" />
+                            </Button>
 
-                        <div className="flex gap-2 pt-2">
-                            <Button variant="outline" className="flex-1 border-gray-200 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50" onClick={() => onEdit(item)}>
+                            <Button variant="outline" size="sm" className="flex-1 border-gray-200 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50" onClick={() => onEdit(item)}>
                                 <Pencil className="w-4 h-4 mr-2" /> Edit
                             </Button>
-                            <Button variant="outline" className="flex-1 border-gray-200 hover:border-red-300 hover:text-red-600 hover:bg-red-50" onClick={() => onDelete(item.id)}>
-                                <Trash2 className="w-4 h-4 mr-2" /> Hapus
+                            
+                            <Button variant="outline" size="sm" className="border-gray-200 hover:border-red-300 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(item)}>
+                                <Trash2 className="w-4 h-4" />
                             </Button>
                         </div>
                     </CardContent>

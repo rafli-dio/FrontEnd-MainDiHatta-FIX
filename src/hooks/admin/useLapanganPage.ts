@@ -7,13 +7,17 @@ import { Lapangan } from '@/types';
 import { sweetAlert } from '@/lib/sweetAlert';
 
 export function useLapanganPage() {
-    // State
+    // State Lapangan
     const [lapangans, setLapangans] = useState<Lapangan[]>([]);
     const [loading, setLoading] = useState(true);
     
-    // Modal State
+    // State Modal Lapangan (CRUD)
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editData, setEditData] = useState<Lapangan | null>(null);
+
+    // --- NEW: State Modal Maintenance ---
+    const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
+    const [selectedLapanganId, setSelectedLapanganId] = useState<number | null>(null);
 
     // 1. Fetch Data
     const fetchLapangans = async () => {
@@ -33,7 +37,7 @@ export function useLapanganPage() {
         fetchLapangans();
     }, []);
 
-    // 2. Handlers
+    // 2. Handlers CRUD Lapangan
     const handleCreate = () => {
         setEditData(null);
         setIsDialogOpen(true);
@@ -92,6 +96,12 @@ export function useLapanganPage() {
         }
     };
 
+    // --- NEW: Handler Maintenance ---
+    const handleManageMaintenance = (id: number) => {
+        setSelectedLapanganId(id);
+        setIsMaintenanceDialogOpen(true);
+    };
+
     return {
         lapangans,
         loading,
@@ -101,6 +111,10 @@ export function useLapanganPage() {
         handleCreate,
         handleEdit,
         handleDelete,
-        handleSubmit
+        handleSubmit,
+        isMaintenanceDialogOpen,
+        setIsMaintenanceDialogOpen,
+        selectedLapanganId,
+        handleManageMaintenance
     };
 }

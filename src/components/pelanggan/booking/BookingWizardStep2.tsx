@@ -21,7 +21,11 @@ interface BookingWizardStep2Props {
     bookedDates: Date[];
     getJamSelesai: () => string;
     bookings?: Booking[];
-    jamOperasional: { buka: number; tutup: number }; 
+    jamOperasional: { buka: number; tutup: number };
+    
+    // --- PROPS BARU DITAMBAHKAN ---
+    maintenanceDates?: { from: Date; to: Date }[]; 
+    maxDuration?: number;
 }
 
 export default function BookingWizardStep2({ 
@@ -30,10 +34,13 @@ export default function BookingWizardStep2({
     bookedDates = [],
     getJamSelesai, 
     bookings = [],
-    jamOperasional = { buka: 8, tutup: 23 } 
+    jamOperasional = { buka: 8, tutup: 23 },
+    
+    // --- DEFAULTS ---
+    maintenanceDates = [],
+    maxDuration = 12
 }: BookingWizardStep2Props) {
     
- 
     const safeBookings = Array.isArray(bookings) ? bookings : [];
     const safeBookedDates = Array.isArray(bookedDates) ? bookedDates : [];
 
@@ -44,35 +51,8 @@ export default function BookingWizardStep2({
         return `${hour.toString().padStart(2, '0')}:00`;
     });
 
-    const getMaxDuration = () => {
-        if (!formData.jam_mulai || !formData.tanggal_booking) return 5; 
-
-        const dateStr = format(new Date(formData.tanggal_booking), 'yyyy-MM-dd');
-        const startHour = parseInt(formData.jam_mulai.split(':')[0]);
-
-        const nextBookings = safeBookings
-            .filter(b => {
-                if (!b?.tanggal_booking) return false;
-                const bDate = format(new Date(b.tanggal_booking), 'yyyy-MM-dd');
-                return bDate === dateStr && b.status_booking_id !== 4;
-            })
-            .map(b => parseInt(b.jam_mulai.split(':')[0]))
-            .filter(h => h > startHour) 
-            .sort((a, b) => a - b); 
-
-        if (nextBookings.length > 0) {
-            const nextBookingStart = nextBookings[0];
-            const gap = nextBookingStart - startHour;
-            return gap
-        }
-
-        const closingHour = jamOperasional.tutup;
-        const timeLeft = closingHour - startHour;
-        
-        return timeLeft;
-    };
-
-    const maxDuration = getMaxDuration();
+    // --- FUNGSI LAMA (getMaxDuration) DIHAPUS ---
+    // Karena logika sudah dipindah ke hook useBookingWizard agar lebih aman
 
     const isTimePassed = (time: string) => {
         if (!formData.tanggal_booking) return false;
@@ -166,15 +146,44 @@ export default function BookingWizardStep2({
                                 selected={formData.tanggal_booking ? new Date(formData.tanggal_booking) : undefined}
                                 onSelect={handleDateSelect}
                                 initialFocus
-                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                                modifiers={{ booked: safeBookedDates }}
-                                modifiersStyles={{ booked: { color: '#D93F21', fontWeight: 'bold', textDecoration: 'underline' } }}
+                                
+                                // --- VALIDASI TANGGAL ---
+                                disabled={[
+                                    // 1. Matikan tanggal lampau
+                                    (date) => date < new Date(new Date().setHours(0, 0, 0, 0)),
+                                    // 2. Matikan tanggal MAINTENANCE (Spread operator array)
+                                    ...maintenanceDates
+                                ]}
+                                
+                                modifiers={{ 
+                                    booked: safeBookedDates, 
+                                    maintenance: maintenanceDates 
+                                }}
+                                modifiersStyles={{ 
+                                    booked: { color: '#D93F21', fontWeight: 'bold', textDecoration: 'underline' },
+                                    maintenance: { color: '#9CA3AF', textDecoration: 'line-through', opacity: 0.5 }
+                                }}
                                 className="rounded-md border-none"
                             />
                         </div>
                     </PopoverContent>
                 </Popover>
             </div>
+
+            {/* ALERT MAINTENANCE (Jika user memaksa input manual/bug) */}
+            {maintenanceDates.some(range => {
+                 if(!formData.tanggal_booking) return false;
+                 const d = new Date(formData.tanggal_booking);
+                 d.setHours(0,0,0,0);
+                 const start = new Date(range.from); start.setHours(0,0,0,0);
+                 const end = new Date(range.to); end.setHours(23,59,59,999);
+                 return d >= start && d <= end;
+            }) && (
+                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="font-medium">Maaf, lapangan tutup pada tanggal ini (Maintenance).</span>
+                </div>
+            )}
 
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -262,15 +271,17 @@ export default function BookingWizardStep2({
                     <Input 
                         type="number" 
                         min="1" 
+                        // --- PAKAI PROPS MAX DURATION ---
                         max={maxDuration}
                         className="bg-white border-gray-300 focus:border-[#D93F21]"
                         value={formData.durasi_jam}
                         onChange={e => {
                             const val = parseInt(e.target.value);
+                            // Validasi input agar tidak melebihi maxDuration
                             if (val > maxDuration) {
                                 setFormData({...formData, durasi_jam: maxDuration.toString()});
                             } else if (val < 1 && e.target.value !== '') {
-                                // jangan update
+                                // jangan update jika < 1
                             } else {
                                 setFormData({...formData, durasi_jam: e.target.value});
                             }
