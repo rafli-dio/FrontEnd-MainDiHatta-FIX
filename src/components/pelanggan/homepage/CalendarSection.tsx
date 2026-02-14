@@ -117,9 +117,6 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                     <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mt-4 md:mt-6 mb-3 md:mb-4">
                         Pilih Waktu Mainmu!
                     </h2>
-                    <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed">
-                        Hijau = Kosong, Merah = Ada Isi, <span className="font-bold text-gray-400">Abu-abu = Tutup/Lewat</span>.
-                    </p>
                 </div>
 
                 <div className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
