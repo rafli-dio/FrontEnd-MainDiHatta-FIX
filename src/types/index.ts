@@ -43,6 +43,8 @@ export interface Lapangan {
     foto?: string;
     foto_url?: string;
     status_aktif: boolean;
+    
+    maintenances?: CourtMaintenance[]; 
 }
 
 // Master
@@ -84,6 +86,19 @@ export interface FAQ {
     is_aktif: boolean;
     created_at?: string;
     updated_at?: string;
+}
+
+// Lapangan Maintenance 
+export interface CourtMaintenance {
+    id: number;
+    lapangan_id: number;
+    start_date: string;
+    end_date: string;   
+    keterangan: string;
+    is_active: boolean;
+    created_at?: string;
+    updated_at?: string;
+    lapangan?: Lapangan; 
 }
 
 // Helper
