@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from '@/lib/axios';
 import { toast } from 'sonner';
-import { Loader2, Plus, Trash2, CalendarX, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Trash2, CalendarX, AlertTriangle, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
@@ -28,16 +28,14 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Form State
     const [form, setForm] = useState({
         start_date: '',
         end_date: '',
         keterangan: ''
     });
 
-    const [warningMsg, setWarningMsg] = useState<string | null>(null);
+    const [warningMsg, setWarningMsg] = useState<{ type: 'warning' | 'info', message: string } | null>(null);
 
-    // Fetch History saat dialog dibuka
     useEffect(() => {
         if (isOpen && lapanganId) {
             fetchHistory();
@@ -49,17 +47,13 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
     const fetchHistory = async () => {
         setLoading(true);
         try {
-            // Note: Idealnya API maintenance support filter by lapangan_id
-            // Jika belum ada filter di backend, endpoint ini akan return semua jadwal.
-            // Anda bisa tambahkan logic filter di backend atau filter manual di sini.
-            const res = await axios.get('/api/maintenance'); 
+            const res = await axios.get('/api/public/maintenances'); 
             const allData = res.data?.data || [];
             
-            // Filter hanya milik lapangan ini
             const myData = allData.filter((m: any) => m.lapangan_id === lapanganId);
             setHistory(myData);
         } catch (error) {
-            console.error(error);
+            console.error("Gagal load history:", error);
         } finally {
             setLoading(false);
         }
@@ -75,22 +69,26 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
         try {
             const payload = {
                 lapangan_id: lapanganId,
-                start_date: form.start_date, // pastikan format input date sesuai (YYYY-MM-DD)
+                start_date: form.start_date, 
                 end_date: form.end_date,
                 keterangan: form.keterangan
             };
 
-            const res = await axios.post('/api/maintenance', payload);
+            const res = await axios.post('/api/maintenances', payload);
             
-            // Cek jika ada warning dari backend (soal booking bentrok)
-            if (res.data?.warning) {
-                setWarningMsg(res.data.warning);
-                toast.warning("Jadwal disimpan, tapi ada booking bentrok!", { duration: 5000 });
+            const { auto_cancelled_count, warning } = res.data;
+
+            if (auto_cancelled_count > 0) {
+                setWarningMsg({
+                    type: 'warning',
+                    message: warning || `Sistem otomatis membatalkan ${auto_cancelled_count} booking yang bentrok!`
+                });
+                toast.warning(`Berhasil! ${auto_cancelled_count} booking terdampak telah dibatalkan.`, { duration: 5000 });
             } else {
                 toast.success("Jadwal libur berhasil ditambahkan.");
+                setWarningMsg(null);
             }
 
-            // Reset form & Refresh list
             setForm({ start_date: '', end_date: '', keterangan: '' });
             fetchHistory();
 
@@ -99,7 +97,6 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
             const errDetails = error.response?.data?.errors;
             
             if (errDetails) {
-                // Tampilkan error validasi pertama
                 const firstKey = Object.keys(errDetails)[0];
                 toast.error(`${firstKey}: ${errDetails[firstKey][0]}`);
             } else {
@@ -170,10 +167,22 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
                             />
                         </div>
                         
+                        {/* AREA FEEDBACK KHUSUS */}
                         {warningMsg && (
-                            <div className="bg-yellow-50 text-yellow-700 text-xs p-2 rounded flex items-start gap-2 border border-yellow-200">
-                                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                                <span>{warningMsg}</span>
+                            <div className={`text-xs p-3 rounded flex items-start gap-2 border ${
+                                warningMsg.type === 'warning' 
+                                    ? 'bg-orange-50 text-orange-800 border-orange-200' 
+                                    : 'bg-blue-50 text-blue-800 border-blue-200'
+                            }`}>
+                                {warningMsg.type === 'warning' ? (
+                                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                                ) : (
+                                    <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                                )}
+                                <div>
+                                    <span className="font-bold block mb-1">Status Penyimpanan:</span>
+                                    {warningMsg.message}
+                                </div>
                             </div>
                         )}
 
@@ -202,7 +211,10 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
                             <TableBody>
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center py-4 text-xs text-gray-500">Memuat...</TableCell>
+                                        <TableCell colSpan={4} className="text-center py-4 text-xs text-gray-500">
+                                            <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1" />
+                                            Memuat...
+                                        </TableCell>
                                     </TableRow>
                                 ) : history.length === 0 ? (
                                     <TableRow>

@@ -22,6 +22,7 @@ export function useBookingWizard() {
     const urlDate = searchParams.get('date');
     const initialDate = urlDate ? new Date(urlDate) : undefined;
     
+    // --- STATE ---
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -50,6 +51,7 @@ export function useBookingWizard() {
         bukti_pembayaran: null as File | null,
     });
 
+    // --- FETCH DATA ---
     const fetchData = useCallback(async () => {
         try {
             const [resLap, resPay, resBook, resMaint] = await Promise.all([
@@ -64,6 +66,7 @@ export function useBookingWizard() {
                 return Array.isArray(data) ? data : [];
             };
 
+            // 1. Lapangan
             const lapData = getSafeArray(resLap);
             if (lapData.length > 0) {
                 const lap = lapData[0]; 
@@ -78,17 +81,34 @@ export function useBookingWizard() {
                 }
             }
 
+            // 2. Payment Methods
             const payData = getSafeArray(resPay);
             setPaymentMethods(payData.filter((p: any) => p?.is_aktif));
 
+            // 3. Bookings
             const bookData = getSafeArray(resBook);
-            const dates = bookData
-                .filter((b: Booking) => b?.status_booking_id !== 4 && b?.tanggal_booking)
-                .map((b: Booking) => new Date(b.tanggal_booking));
+            
+            // Filter booking aktif:
+            // - Bukan Status 4 (Batal User)
+            // - Bukan Status 6 (Dibatalkan Admin/Maintenance) -> Karena slot ini sudah dicover oleh Maintenance Date
+            const activeBookings = bookData.filter((b: Booking) => 
+                b?.status_booking_id !== 4 && 
+                b?.status_booking_id !== 6 && 
+                b?.tanggal_booking
+            );
+
+            const dates = activeBookings.map((b: Booking) => new Date(b.tanggal_booking));
             
             setBookedDates(dates);
-            setBookings(bookData);
+            setBookings(bookData); 
 
+        } catch (error) {
+            console.error("Gagal memuat data:", error);
+            toast.error("Gagal memuat data booking. Silakan refresh.");
+        }
+        
+        try {
+            const resMaint = await axios.get('/api/public/maintenances');
             const maintData = resMaint.data?.data || [];
             const liburRanges = maintData.map((m: any) => ({
                 from: new Date(m.start_date),
@@ -96,13 +116,13 @@ export function useBookingWizard() {
                 keterangan: m.keterangan 
             }));
             setMaintenanceDates(liburRanges);
-
         } catch (error) {
-            console.error("Gagal memuat data:", error);
-            toast.error("Gagal memuat data booking. Silakan refresh.");
+            console.error("Gagal load maintenance:", error);
         }
+
     }, []);
 
+    // Initial Load & User Autofill
     useEffect(() => {
         if (user) {
             setFormData(prev => ({
@@ -131,7 +151,8 @@ export function useBookingWizard() {
         const upcomingBookings = safeBookings
             .filter(b => 
                 b?.tanggal_booking === dateStr && 
-                b?.status_booking_id !== 4 &&
+                b?.status_booking_id !== 4 && 
+                b?.status_booking_id !== 6 && 
                 b?.lapangan_id === selectedLapId &&
                 parseInt(b.jam_mulai.split(':')[0]) > currentStartHour
             )
@@ -198,7 +219,10 @@ export function useBookingWizard() {
 
         return safeBookings.some(booking => {
             if (!booking || !booking.tanggal_booking || !booking.jam_mulai) return false;
-            if (booking.tanggal_booking !== dateStr || booking.status_booking_id === 4) return false;
+            
+            if (booking.tanggal_booking !== dateStr || 
+                booking.status_booking_id === 4 || 
+                booking.status_booking_id === 6) return false;
 
             const existingStart = parseInt(booking.jam_mulai.split(':')[0]);
             
@@ -213,6 +237,7 @@ export function useBookingWizard() {
         });
     };
 
+    // --- NAVIGATION ---
     const nextStep = () => {
         if (step === 1) {
             if (!formData.nama_club) return toast.error("Mohon isi Nama Club!");
@@ -226,7 +251,7 @@ export function useBookingWizard() {
             
             if (checkConflict()) {
                 return toast.error("Jadwal Tidak Tersedia!", { 
-                    description: "Tanggal sedang tutup atau jam sudah dibooking orang lain." 
+                    description: "Tanggal sedang tutup (Maintenance) atau jam sudah dibooking." 
                 });
             }
         }
@@ -237,6 +262,7 @@ export function useBookingWizard() {
 
     const prevStep = () => setStep(prev => prev - 1);
 
+    // --- SUBMIT ---
     const handleSubmit = async () => {
         if (!formData.payment_method_id || !formData.bukti_pembayaran || !formData.asal_bank || !formData.nama_pengirim) {
             return toast.error("Lengkapi data pembayaran & upload bukti!");
@@ -244,8 +270,9 @@ export function useBookingWizard() {
 
         if (!lapanganId || !formData.tanggal_booking) return toast.error("Data booking tidak valid.");
 
+        // Cek konflik terakhir sebelum kirim
         if (checkConflict()) {
-            return toast.error("Gagal Submit", { description: "Jadwal tidak tersedia." });
+            return toast.error("Gagal Submit", { description: "Jadwal tidak tersedia (Maintenance/Bentrok)." });
         }
 
         setIsSubmitting(true);
@@ -287,6 +314,9 @@ export function useBookingWizard() {
                     setStep(2); 
                 } else if (responseData.errors?.lapangan_id) {
                       toast.error("Lapangan Error", { description: "Hubungi Admin." });
+                } else if (responseData.errors?.status_booking_id) { 
+                    toast.error("Jadwal Tutup", { description: "Lapangan sedang Maintenance." });
+                    setStep(2);
                 } else {
                     toast.error("Validasi Gagal", { description: responseData.message });
                 }
