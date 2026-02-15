@@ -2,7 +2,7 @@
 
 import { 
     Pencil, Trash2, Loader2, Search, 
-    AlertCircle, Clock, CheckCircle2, Ban, CheckSquare 
+    AlertCircle, Clock, CheckCircle2, Ban, CheckSquare, AlertTriangle 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,48 +42,50 @@ export default function StatusBookingTable({
     const totalPages = Math.ceil(totalData / itemsPerPage);
     const startNumber = (currentPage - 1) * itemsPerPage + 1;
 
-    // Helper untuk menampilkan Badge sesuai status
-    const getStatusBadge = (statusName: string) => {
-        const name = statusName.toLowerCase();
+    // REVISI: Gunakan ID sebagai acuan utama (lebih stabil daripada nama)
+    const getStatusBadge = (status: StatusBooking) => {
+        const id = Number(status.id);
 
-        if (name.includes('pembayaran') || name.includes('pending')) {
-            return (
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 flex w-fit gap-1">
-                    <AlertCircle className="w-3 h-3" /> {statusName}
-                </Badge>
-            );
+        switch (id) {
+            case 1: // Pending / Pembayaran
+                return (
+                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 flex w-fit gap-1">
+                        <AlertCircle className="w-3 h-3" /> {status.nama_status}
+                    </Badge>
+                );
+            case 2: // Menunggu Konfirmasi
+                return (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex w-fit gap-1">
+                        <Clock className="w-3 h-3" /> {status.nama_status}
+                    </Badge>
+                );
+            case 3: // Terkonfirmasi / Lunas
+                return (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex w-fit gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> {status.nama_status}
+                    </Badge>
+                );
+            case 4: // Batal
+                return (
+                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 flex w-fit gap-1">
+                        <Ban className="w-3 h-3" /> {status.nama_status}
+                    </Badge>
+                );
+            case 5: // Selesai
+                return (
+                    <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-300 flex w-fit gap-1">
+                        <CheckSquare className="w-3 h-3" /> {status.nama_status}
+                    </Badge>
+                );
+            case 6: // Dibatalkan Admin (Maintenance) - KHUSUS
+                return (
+                    <Badge className="bg-red-600 hover:bg-red-700 text-white border-none flex w-fit gap-1 shadow-sm">
+                        <AlertTriangle className="w-3 h-3" /> {status.nama_status}
+                    </Badge>
+                );
+            default: // Status Custom (ID 7++)
+                return <Badge variant="secondary">{status.nama_status}</Badge>;
         }
-        if (name.includes('konfirmasi')) {
-            return (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 flex w-fit gap-1">
-                    <Clock className="w-3 h-3" /> {statusName}
-                </Badge>
-            );
-        }
-        if (name.includes('terkonfirmasi')) {
-            return (
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 flex w-fit gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> {statusName}
-                </Badge>
-            );
-        }
-        if (name.includes('batal') || name.includes('cancel')) {
-            return (
-                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100 flex w-fit gap-1">
-                    <Ban className="w-3 h-3" /> {statusName}
-                </Badge>
-            );
-        }
-        if (name.includes('selesai') || name.includes('done')) {
-            return (
-                <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200 flex w-fit gap-1">
-                    <CheckSquare className="w-3 h-3" /> {statusName}
-                </Badge>
-            );
-        }
-
-        // Default Badge
-        return <Badge variant="secondary">{statusName}</Badge>;
     };
 
     const handleDelete = async (status: StatusBooking) => {
@@ -134,10 +136,17 @@ export default function StatusBookingTable({
                                     {item.nama_status}
                                 </TableCell>
                                 <TableCell>
-                                    {getStatusBadge(item.nama_status)}
+                                    {getStatusBadge(item)}
                                 </TableCell>
                                 <TableCell className="text-center text-xs text-gray-400 font-mono">
-                                    <span className="bg-gray-100 px-2 py-1 rounded">ID: {item.id}</span>
+                                    {/* Indikator Visual untuk ID Sistem */}
+                                    <span className={`px-2 py-1 rounded font-bold ${
+                                        item.id <= 6 
+                                            ? 'bg-blue-50 text-blue-600 border border-blue-100' 
+                                            : 'bg-gray-100 text-gray-500 border border-gray-200'
+                                    }`}>
+                                        ID: {item.id}
+                                    </span>
                                 </TableCell>
                                 <TableCell className="text-right space-x-2">
                                     <Button 
@@ -152,9 +161,10 @@ export default function StatusBookingTable({
                                         variant="ghost" 
                                         size="icon" 
                                         onClick={() => handleDelete(item)}
-                                        disabled={item.id <= 5} // Proteksi status default sistem (1-5)
-                                        title={item.id <= 5 ? "Status sistem tidak bisa dihapus" : "Hapus Status"}
-                                        className={`hover:bg-red-50 hover:text-red-600 ${item.id <= 5 ? "opacity-30 cursor-not-allowed" : ""}`}
+                                        // PROTEKSI: ID 1-6 Jangan Dihapus
+                                        disabled={item.id <= 6} 
+                                        title={item.id <= 6 ? "Status sistem tidak bisa dihapus" : "Hapus Status"}
+                                        className={`hover:bg-red-50 hover:text-red-600 ${item.id <= 6 ? "opacity-30 cursor-not-allowed" : ""}`}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
