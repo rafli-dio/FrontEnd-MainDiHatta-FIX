@@ -46,7 +46,6 @@ export default function Navbar() {
     return (
         <nav className="sticky top-4 z-50 mx-4 md:mx-12 mt-4 bg-[#1a1a1a] text-white py-3 px-6 md:px-8 rounded-2xl shadow-xl border border-gray-800/50 backdrop-blur-md transition-all duration-300">
             <div className="flex justify-between items-center">
-                {/* LOGO */}
                 <Link href={user ? "/pelanggan/home" : "/"} className="text-xl md:text-2xl font-bold tracking-tight hover:opacity-90 transition-opacity">
                     MainDi<span className="text-[#D93F21]">Hatta</span>.id
                 </Link>
@@ -73,9 +72,7 @@ export default function Navbar() {
                     })}
                 </div>
 
-                {/* RIGHT SECTION */}
                 <div className="flex items-center gap-4">
-                    {/* Search Bar (Optional) */}
                     <div className="relative hidden lg:block">
                         <input
                             type="text"
@@ -153,16 +150,14 @@ export default function Navbar() {
                                             );
                                         })}
                                         
-                                        {/* Mobile Notification Link (Fallback jika dropdown susah di mobile) */}
+                                   
                                         {user && (
                                             <Link href="/pelanggan/notifications" onClick={closeMobileMenu} className="transition flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">
                                                 <span>Notifikasi</span>
-                                                {/* Badge Count Logic Here if needed */}
                                             </Link>
                                         )}
                                     </nav>
                                     
-                                    {/* Footer Mobile Menu */}
                                     <div className="border-t border-gray-800 pt-6 mt-4">
                                         {isLoading ? (
                                              <div className="flex justify-center py-2"><Loader2 className="animate-spin w-5 h-5 text-gray-500" /></div>
