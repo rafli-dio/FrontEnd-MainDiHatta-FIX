@@ -2,12 +2,14 @@
 
 import { Booking } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card'; 
 import { Badge } from '@/components/ui/badge';
 import {
-    Calendar, Clock, MapPin, CreditCard, Upload, Printer, Loader2, CheckCircle2, AlertTriangle, MessageCircle, XCircle
+    Calendar, Clock, MapPin, CreditCard, Upload, Printer, Loader2, CheckCircle2, AlertTriangle, MessageCircle, CalendarClock
 } from 'lucide-react';
 import { formatRupiah, calculateDuration, getStatusConfig } from '@/lib/bookingUtils';
+
+const ADMIN_PHONE = "6282135449277"; 
 
 interface BookingCardProps {
     booking: Booking;
@@ -31,13 +33,30 @@ export default function BookingCard({
     
     const statusId = Number(booking.status_booking_id); 
     const durasi = calculateDuration(booking.jam_mulai, booking.jam_selesai);
-    
     const statusConfig = getStatusConfig(statusId);
 
-    const handleContactAdmin = () => {
-        const adminPhone = "6282135449277"; 
+    // --- HELPER LOGIC ---
+    const canReschedule = () => {
+        if (isHistory) return false; 
+        if (![2, 3].includes(statusId)) return false; 
+
+        const mainDate = new Date(`${booking.tanggal_booking}T${booking.jam_mulai}`);
+        const now = new Date();
+        const diffInHours = (mainDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+        
+        return diffInHours > 24; 
+    };
+
+    // 2. Link WA untuk Maintenance (ID 6)
+    const handleContactMaintenance = () => {
         const message = `Halo Admin Hatta Sport. Saya melihat status booking #${booking.kode_booking} (Tanggal: ${booking.tanggal_booking}) dibatalkan admin (Maintenance). Mohon info refund/reschedule.`;
-        window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
+        window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
+    // 3. Link WA untuk Ajukan Reschedule
+    const handleReschedule = () => {
+        const message = `Halo Admin. Saya ingin reschedule booking #${booking.kode_booking} (Tgl: ${booking.tanggal_booking}, Jam: ${booking.jam_mulai}). Mohon info slot pengganti.`;
+        window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
     let borderClass = 'border-l-[#D93F21]';
@@ -55,13 +74,12 @@ export default function BookingCard({
                                 {booking.kode_booking}
                             </span>
                             
-                            {/* BADGE STATUS */}
                             {statusId === 6 ? (
-                                <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200">
+                                <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200 shadow-none">
                                     <AlertTriangle className="w-3 h-3 mr-1" /> Dibatalkan Admin
                                 </Badge>
                             ) : (
-                                <Badge className={`${statusConfig.bgColor} ${statusConfig.textColor} hover:${statusConfig.bgColor}`}>
+                                <Badge className={`${statusConfig.bgColor} ${statusConfig.textColor} hover:${statusConfig.bgColor} shadow-none`}>
                                     {statusConfig.label}
                                 </Badge>
                             )}
@@ -70,7 +88,7 @@ export default function BookingCard({
                         <div>
                             <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                                 <MapPin className="w-5 h-5 text-[#D93F21]" /> 
-                                {booking.lapangan?.nama_lapangan}
+                                {booking.lapangan?.nama_lapangan || 'Lapangan Hatta Sport'}
                             </h3>
                             <div className="text-sm text-gray-600 mt-2 space-y-1.5">
                                 <p className="flex items-center gap-2">
@@ -90,15 +108,14 @@ export default function BookingCard({
                             </div>
                         )}
 
-                        {/* --- AREA KHUSUS MAINTENANCE (Pesan Peringatan) --- */}
                         {statusId === 6 && (
-                            <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                            <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg animate-in fade-in slide-in-from-top-1">
                                 <p className="text-xs text-red-700 font-medium mb-2 leading-relaxed">
                                     ⚠️ <strong>Mohon Maaf.</strong> Booking ini dibatalkan karena ada maintenance lapangan mendadak. 
                                     Silakan hubungi admin untuk <strong>Refund</strong> atau <strong>Reschedule</strong>.
                                 </p>
                                 <Button 
-                                    onClick={handleContactAdmin}
+                                    onClick={handleContactMaintenance}
                                     size="sm"
                                     className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto shadow-sm"
                                 >
@@ -118,76 +135,87 @@ export default function BookingCard({
                                 <CreditCard className="w-3 h-3" /> {booking.payment_method?.nama_metode}
                             </div>
                         </div>
-
-                        {/* TOMBOL AKSI (Hanya muncul jika BUKAN status 6) */}
-                        {statusId !== 6 && (
-                            <div className="flex flex-col gap-2 w-full mt-6">
-                                
-                                {(statusId === 3 || statusId === 5) && (
-                                    <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="w-full border-gray-300 text-gray-700 hover:bg-gray-50" 
-                                        onClick={onPrint}
-                                    >
-                                        <Printer className="w-3.5 h-3.5 mr-2" /> Cetak Tiket
-                                    </Button>
-                                )}
-
-                                {!isHistory && (
-                                    <>
-                                        {statusId === 1 && (
-                                            <>
-                                                <Button 
-                                                    size="sm" 
-                                                    className="w-full bg-[#D93F21] hover:bg-[#b9351b] shadow-sm" 
-                                                    onClick={onUpload}
-                                                    disabled={isUploading}
-                                                >
-                                                    {isUploading ? (
-                                                        <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
-                                                    ) : (
-                                                        <Upload className="w-3.5 h-3.5 mr-2" />
-                                                    )}
-                                                    Upload Bukti
-                                                </Button>
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="outline" 
-                                                    className="w-full text-red-600 border-red-200 hover:bg-red-50" 
-                                                    onClick={onCancel}
-                                                >
-                                                    Batalkan
-                                                </Button>
-                                            </>
-                                        )}
-
-                                        {statusId === 2 && (
-                                            <Button 
-                                                size="sm" 
-                                                variant="secondary" 
-                                                className="w-full cursor-default opacity-80 bg-blue-50 text-blue-700 border border-blue-100"
-                                            >
-                                                <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> Sedang Diverifikasi
-                                            </Button>
-                                        )}
-
-                                        {statusId === 3 && (
-                                            <Button 
-                                                size="sm" 
-                                                variant="outline" 
-                                                className="w-full border-green-200 text-green-700 bg-green-50 cursor-default hover:bg-green-50 mb-2"
-                                            >
-                                                <CheckCircle2 className="w-3.5 h-3.5 mr-2" /> Siap Main!
-                                            </Button>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </div>
             </CardContent>
+
+            {statusId !== 6 && statusId !== 4 && (
+                <CardFooter className="bg-gray-50/50 p-4 border-t border-gray-100 flex flex-wrap justify-end gap-2">
+                    
+                    {(statusId === 3 || statusId === 5) && (
+                        <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="border-gray-300 text-gray-700 hover:bg-white bg-white h-9" 
+                            onClick={onPrint}
+                        >
+                            <Printer className="w-4 h-4 mr-2" /> Cetak Tiket
+                        </Button>
+                    )}
+
+                    {!isHistory && (
+                        <>
+                            {canReschedule() && (
+                                <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="text-blue-600 border-blue-200 hover:bg-blue-50 bg-white h-9"
+                                    onClick={handleReschedule}
+                                >
+                                    <CalendarClock className="w-4 h-4 mr-2" /> Reschedule
+                                </Button>
+                            )}
+
+                            {statusId === 1 && (
+                                <Button 
+                                    size="sm" 
+                                    className="bg-[#D93F21] hover:bg-[#b9351b] shadow-sm text-white h-9 px-4" 
+                                    onClick={onUpload}
+                                    disabled={isUploading}
+                                >
+                                    {isUploading ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Upload className="w-4 h-4 mr-2" />
+                                    )}
+                                    Upload Bukti
+                                </Button>
+                            )}
+
+                            {statusId === 1 && (
+                                <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="text-red-600 hover:bg-red-50 h-9" 
+                                    onClick={onCancel}
+                                >
+                                    Batalkan
+                                </Button>
+                            )}
+
+                            {statusId === 2 && (
+                                <Button 
+                                    size="sm" 
+                                    variant="secondary" 
+                                    className="cursor-default opacity-80 bg-blue-50 text-blue-700 border border-blue-100 h-9"
+                                >
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sedang Diverifikasi
+                                </Button>
+                            )}
+
+                            {statusId === 3 && (
+                                <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="border-green-200 text-green-700 bg-green-50 cursor-default hover:bg-green-50 h-9"
+                                >
+                                    <CheckCircle2 className="w-4 h-4 mr-2" /> Siap Main!
+                                </Button>
+                            )}
+                        </>
+                    )}
+                </CardFooter>
+            )}
         </Card>
     );
 }
