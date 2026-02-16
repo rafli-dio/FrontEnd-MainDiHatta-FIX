@@ -130,7 +130,6 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* FORM INPUT */}
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2 space-y-4">
                     <h4 className="text-sm font-bold text-gray-700">Tambah Jadwal Baru</h4>
                     <form onSubmit={handleAdd} className="space-y-3">
@@ -157,7 +156,6 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
                             <Input 
                                 type="date" 
                                 required
-                                // Validasi HTML: Tanggal selesai tidak boleh sebelum tanggal mulai
                                 min={form.start_date} 
                                 value={form.end_date}
                                 onChange={e => setForm({...form, end_date: e.target.value})}
@@ -180,7 +178,6 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
         </p>
     </div>
                         
-                        {/* AREA FEEDBACK KHUSUS */}
                         {warningMsg && (
                             <div className={`text-xs p-3 rounded flex items-start gap-2 border ${
                                 warningMsg.type === 'warning' 
@@ -208,7 +205,6 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
                     </form>
                 </div>
 
-                {/* LIST HISTORY */}
                 <div className="mt-4">
                     <h4 className="text-sm font-bold text-gray-700 mb-2">Riwayat Jadwal Libur</h4>
                     <div className="border rounded-md overflow-hidden">
