@@ -110,7 +110,7 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
     const handleDelete = async (id: number) => {
         if (!confirm('Hapus jadwal libur ini? Slot akan terbuka kembali.')) return;
         try {
-            await axios.delete(`/api/maintenance/${id}`);
+            await axios.delete(`/api/maintenances/${id}`);
             toast.success("Jadwal libur dihapus.");
             fetchHistory();
         } catch (error) {
