@@ -136,36 +136,49 @@ export default function MaintenanceDialog({ isOpen, onOpenChange, lapanganId }: 
                     <form onSubmit={handleAdd} className="space-y-3">
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
-                                <Label className="text-xs">Dari Tanggal</Label>
-                                <Input 
-                                    type="date" 
-                                    required
-                                    value={form.start_date}
-                                    onChange={e => setForm({...form, start_date: e.target.value})}
-                                    className="bg-white"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Sampai Tanggal</Label>
-                                <Input 
-                                    type="date" 
-                                    required
-                                    value={form.end_date}
-                                    onChange={e => setForm({...form, end_date: e.target.value})}
-                                    className="bg-white"
-                                />
-                            </div>
-                        </div>
-                        <div className="space-y-1">
-                            <Label className="text-xs">Keterangan / Alasan</Label>
+                        <Label className="text-xs">Dari Tanggal</Label>
                             <Input 
-                                placeholder="Cth: Perbaikan Ring, Libur Lebaran" 
+                                type="date" 
                                 required
-                                value={form.keterangan}
-                                onChange={e => setForm({...form, keterangan: e.target.value})}
+                                value={form.start_date}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setForm(prev => ({
+                                        ...prev,
+                                        start_date: val,
+                                        end_date: val 
+                                    }));
+                                }}
                                 className="bg-white"
                             />
                         </div>
+                        <div className="space-y-1">
+                            <Label className="text-xs">Sampai Tanggal</Label>
+                            <Input 
+                                type="date" 
+                                required
+                                // Validasi HTML: Tanggal selesai tidak boleh sebelum tanggal mulai
+                                min={form.start_date} 
+                                value={form.end_date}
+                                onChange={e => setForm({...form, end_date: e.target.value})}
+                                className="bg-white"
+                            />
+                        </div>
+                    </div>  
+    
+    <div className="space-y-1">
+        <Label className="text-xs">Keterangan / Alasan</Label>
+        <Input 
+            placeholder="Cth: Perbaikan Ring, Libur Lebaran" 
+            required
+            value={form.keterangan}
+            onChange={e => setForm({...form, keterangan: e.target.value})}
+            className="bg-white"
+        />
+        <p className="text-[10px] text-gray-400">
+            *Untuk libur 1 hari, biarkan tanggal selesai sama dengan tanggal mulai.
+        </p>
+    </div>
                         
                         {/* AREA FEEDBACK KHUSUS */}
                         {warningMsg && (
