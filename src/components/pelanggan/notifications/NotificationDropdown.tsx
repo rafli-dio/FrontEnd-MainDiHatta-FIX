@@ -18,7 +18,6 @@ export default function NotificationDropdown() {
     const { notifications, loading, markAsRead, markAllRead, deleteOne, deleteAll } = useNotifications(user?.id);
     const [isOpen, setIsOpen] = useState(false);
 
-    // Hitung notifikasi yang belum dibaca
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
     return (
