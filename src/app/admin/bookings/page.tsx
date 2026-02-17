@@ -1,7 +1,7 @@
 'use client';
 
+import { useState } from 'react'; // Import useState
 import Link from 'next/link';
-// 1. FIX: Gabungkan semua icon dari lucide-react di sini
 import { 
     Plus, 
     RefreshCcw, 
@@ -20,7 +20,9 @@ import { useBookingAdminPage } from '@/hooks/admin/useBookingAdminPage';
 import BookingFilters from '@/components/admin/bookings/BookingFilters';
 import BookingTable from '@/components/admin/bookings/BookingTable';
 import BookingDetailDialog from '@/components/admin/bookings/BookingDetailDialog';
+import EditBookingDialog from '@/components/admin/bookings/EditBookingDialog'; // IMPORT DIALOG EDIT (Pastikan path sesuai)
 import BookingCalendarView from '@/components/admin/bookings/BookingCalendarView'; 
+import { Booking } from '@/types'; // Import tipe Booking
 
 export default function BookingAdminPage() {
     const {
@@ -37,8 +39,8 @@ export default function BookingAdminPage() {
         currentPage,
         totalPages,
         handlePageChange,
-        selectedBooking,
-        isDialogOpen, setIsDialogOpen,
+        selectedBooking, // Ini untuk Detail View
+        isDialogOpen, setIsDialogOpen, // Ini untuk Detail Dialog
         isProcessing,
         handleViewDetail,
         handleApprove,
@@ -46,9 +48,25 @@ export default function BookingAdminPage() {
         fetchBookings
     } = useBookingAdminPage();
 
+    // --- STATE TAMBAHAN UNTUK EDIT / RESCHEDULE ---
+    const [bookingToEdit, setBookingToEdit] = useState<Booking | null>(null);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+
+    // Handler ketika tombol Pensil di tabel diklik
+    const handleEditClick = (booking: Booking) => {
+        setBookingToEdit(booking);
+        setIsEditOpen(true);
+    };
+
+    // Handler setelah sukses edit (Refresh data)
+    const handleEditSuccess = () => {
+        fetchBookings();
+    };
+
     return (
         <div className="space-y-6 pb-20 p-6"> 
             
+            {/* --- HEADER --- */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Manajemen Booking</h1>
@@ -75,6 +93,7 @@ export default function BookingAdminPage() {
                 </div>
             </div>
 
+            {/* --- TABS VIEW --- */}
             <Tabs defaultValue="table" value={viewMode} onValueChange={setViewMode} className="w-full">
                 <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6 p-1 bg-gray-100/80">
                     <TabsTrigger value="table" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
@@ -85,6 +104,7 @@ export default function BookingAdminPage() {
                     </TabsTrigger>
                 </TabsList>
 
+                {/* --- TABEL VIEW --- */}
                 <TabsContent value="table" className="space-y-6 mt-0 animate-in fade-in-50 duration-300">
                     
                     <BookingFilters 
@@ -99,8 +119,10 @@ export default function BookingAdminPage() {
                             bookings={bookings}
                             loading={loading}
                             onView={handleViewDetail}
+                            onEdit={handleEditClick} // Masukkan Handler Edit di sini
                         />
                         
+                        {/* PAGINATION */}
                         {!loading && totalData > 0 && (
                             <div className="flex items-center justify-between p-4 border-t bg-gray-50/50">
                                 <div className="text-sm text-gray-500">
@@ -134,6 +156,7 @@ export default function BookingAdminPage() {
                     </div>
                 </TabsContent>
 
+                {/* --- CALENDAR VIEW --- */}
                 <TabsContent value="calendar" className="mt-0 animate-in fade-in-50 duration-300">
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
                         <BookingCalendarView 
@@ -147,6 +170,9 @@ export default function BookingAdminPage() {
                 </TabsContent>
             </Tabs>
 
+            {/* --- DIALOGS --- */}
+            
+            {/* 1. Detail Dialog (Approve/Reject) */}
             <BookingDetailDialog 
                 isOpen={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
@@ -156,6 +182,16 @@ export default function BookingAdminPage() {
                 isProcessing={isProcessing}
                 onRefresh={fetchBookings}
             />
+
+            {/* 2. Edit / Reschedule Dialog (BARU) */}
+            {bookingToEdit && (
+                <EditBookingDialog 
+                    open={isEditOpen}
+                    onOpenChange={setIsEditOpen}
+                    booking={bookingToEdit}
+                    onSuccess={handleEditSuccess}
+                />
+            )}
         </div>
     );
 }
