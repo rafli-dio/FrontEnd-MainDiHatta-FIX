@@ -49,7 +49,14 @@ export default function BookingCard({
 
     // 2. Link WA untuk Maintenance (ID 6)
     const handleContactMaintenance = () => {
-        const message = `Halo Admin Hatta Sport. Saya melihat status booking #${booking.kode_booking} (Tanggal: ${booking.tanggal_booking}) dibatalkan admin (Maintenance). Mohon info refund/reschedule.`;
+    const message = `Halo Admin Hatta Sport. 👋
+    Saya ingin menanyakan perihal booking yang *Dibatalkan Admin (Maintenance)*.
+    Berikut detail booking saya:
+    🎫 Kode: *${booking.kode_booking}*
+    👤 Nama: *${booking.user?.name || booking.nama_pengirim}*
+    📅 Tanggal: ${booking.tanggal_booking}
+
+    Mohon bantuannya untuk proses *Refund* atau *Reschedule*. Terima kasih.`;
         window.open(`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
