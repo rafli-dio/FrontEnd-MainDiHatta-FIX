@@ -47,7 +47,7 @@ export function useBookingWizard() {
         payment_method_id: '',
         asal_bank: '',      
         nama_pengirim: '',  
-        jumlah_dp: '',
+        jumlah_bayar: '',
         bukti_pembayaran: null as File | null,
     });
 
@@ -292,7 +292,7 @@ export function useBookingWizard() {
             const bookingId = resBooking.data?.data?.id || resBooking.data.id;
 
             const paymentData = new FormData();
-            paymentData.append('jumlah_dp', formData.jumlah_dp || totalHarga.toString());
+            paymentData.append('jumlah_bayar', formData.jumlah_bayar || totalHarga.toString());
             paymentData.append('bukti_pembayaran', formData.bukti_pembayaran!);
 
             await axios.post(`/api/bookings/${bookingId}/payment`, paymentData, {

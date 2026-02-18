@@ -33,7 +33,7 @@ export function useCreateBookingForm() {
     durasi_jam: '1',
     payment_method_id: '',
     status_booking_id: '1',
-    jumlah_dp: '',
+    jumlah_bayar: '',
     asal_bank: '',
     bukti_pembayaran: null,
   });
@@ -251,7 +251,7 @@ export function useCreateBookingForm() {
         acara: formData.acara || undefined,
         asal_bank: formData.asal_bank || undefined,
         nama_pengirim: formData.nama_pengirim || undefined,
-        jumlah_dp: formData.jumlah_dp ? parseInt(String(formData.jumlah_dp)) : undefined,
+        jumlah_bayar: formData.jumlah_bayar ? parseInt(String(formData.jumlah_bayar)) : undefined,
         status_booking_id: formData.status_booking_id ? parseInt(String(formData.status_booking_id)) : 1,
       };
 
@@ -266,7 +266,7 @@ export function useCreateBookingForm() {
       if (formData.bukti_pembayaran) {
           const fileData = new FormData();
           fileData.append('bukti_pembayaran', formData.bukti_pembayaran);
-          if (formData.jumlah_dp) fileData.append('jumlah_dp', formData.jumlah_dp);
+          if (formData.jumlah_bayar) fileData.append('jumlah_bayar', formData.jumlah_bayar);
           
           await axios.post(`/api/bookings/${bookingId}/payment`, fileData, {
               headers: { 'Content-Type': 'multipart/form-data' }

@@ -26,7 +26,7 @@ export default function BookingWizardStep3({ formData, setFormData, paymentMetho
         if (totalHarga > 0) {
             setFormData({
                 ...formData,
-                jumlah_dp: totalHarga.toString() 
+                jumlah_bayar: totalHarga.toString() 
             });
         }
     }, [totalHarga]); 
@@ -83,7 +83,7 @@ export default function BookingWizardStep3({ formData, setFormData, paymentMetho
                         type="number" 
                         disabled 
                         className="h-12 bg-gray-200 border-gray-300 rounded-lg font-bold text-gray-500 cursor-not-allowed opacity-100" 
-                        value={formData.jumlah_dp} 
+                        value={formData.jumlah_bayar} 
                     />
                     <p className="text-xs text-[#D93F21] font-medium mt-1">Total Tagihan: {formatRupiah(totalHarga)}</p>
                 </div>

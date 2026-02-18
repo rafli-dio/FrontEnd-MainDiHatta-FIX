@@ -312,12 +312,12 @@ export default function CreateBookingForm() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Jumlah Bayar / DP (Rp)</Label>
+                                <Label>Jumlah Bayar (Rp)</Label>
                                 <Input 
                                     type="text" 
                                     placeholder="0" 
-                                    value={formData.jumlah_dp} 
-                                    onChange={e => setFormData({ ...formData, jumlah_dp: e.target.value })} 
+                                    value={formData.jumlah_bayar} 
+                                    onChange={e => setFormData({ ...formData, jumlah_bayar: e.target.value })} 
                                 />
                                 <p className="text-[10px] text-gray-500">Jika lunas, isi sesuai total tagihan.</p>
                             </div>

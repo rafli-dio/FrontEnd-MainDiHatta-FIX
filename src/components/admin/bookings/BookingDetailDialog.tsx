@@ -142,7 +142,7 @@ export default function BookingDetailDialog({
                             <div className="text-sm text-gray-600 ml-6 space-y-1">
                                 <p><span className="font-medium">Metode:</span> {booking.payment_method?.nama_metode}</p>
                                 <p><span className="font-medium">Total Tagihan:</span> {formatRupiah(Number(booking.total_harga))}</p>
-                                <p><span className="font-medium text-blue-600">DP Masuk:</span> {formatRupiah(Number(booking.jumlah_dp))}</p>
+                                <p><span className="font-medium text-blue-600">DP Masuk:</span> {formatRupiah(Number(booking.jumlah_bayar))}</p>
                                 
                                 {(!isCashPayment && (booking.asal_bank || booking.nama_pengirim)) && (
                                     <div className="mt-3 pt-2 border-t border-gray-200">

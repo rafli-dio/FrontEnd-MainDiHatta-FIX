@@ -41,7 +41,6 @@ export default function EditBookingDialog({
         lapangan_id: ''
     });
 
-    // 1. Fetch Data Lapangan
     useEffect(() => {
         const fetchLapangans = async () => {
             try {
@@ -55,12 +54,10 @@ export default function EditBookingDialog({
         fetchLapangans();
     }, []);
 
-    // 2. Isi Form saat Booking Terpilih Berubah
     useEffect(() => {
         if (booking && open) {
             setFormData({
                 tanggal_booking: booking.tanggal_booking,
-                // Ambil 5 karakter pertama (HH:mm) dari format H:i:s
                 jam_mulai: booking.jam_mulai ? booking.jam_mulai.substring(0, 5) : '',
                 durasi_jam: Number(booking.durasi_jam) || 1,
                 lapangan_id: String(booking.lapangan_id)
@@ -68,13 +65,11 @@ export default function EditBookingDialog({
         }
     }, [booking, open]);
 
-    // 3. Handle Simpan Perubahan
     const handleSave = async () => {
         if (!booking) return;
         setIsLoading(true);
 
         try {
-            // Panggil API Update (Reschedule Logic di Backend)
             await axios.put(`/api/bookings/${booking.id}`, {
                 ...formData,
                 durasi_jam: Number(formData.durasi_jam),
@@ -85,8 +80,8 @@ export default function EditBookingDialog({
                 description: "Jadwal booking telah diperbarui & notifikasi dikirim."
             });
             
-            onSuccess(); // Refresh tabel induk
-            onOpenChange(false); // Tutup modal
+            onSuccess(); 
+            onOpenChange(false); 
             
         } catch (error: any) {
             const msg = error.response?.data?.message || "Gagal update";
@@ -120,13 +115,11 @@ export default function EditBookingDialog({
                 </DialogHeader>
                 
                 <div className="grid gap-5 py-4">
-                    {/* Info Pelanggan (Read Only) */}
                     <div className="p-3 bg-gray-50 border rounded-md text-sm text-gray-600 space-y-1">
                         <p><strong>Kode:</strong> {booking.kode_booking}</p>
                         <p><strong>Nama:</strong> {booking.user?.name || booking.nama_pengirim}</p>
                     </div>
 
-                    {/* Input Tanggal */}
                     <div className="grid gap-2">
                         <Label htmlFor="tanggal">Tanggal Baru</Label>
                         <Input 
@@ -139,7 +132,6 @@ export default function EditBookingDialog({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Input Jam Mulai */}
                         <div className="grid gap-2">
                             <Label htmlFor="jam">Jam Mulai</Label>
                             <Input 
@@ -151,7 +143,6 @@ export default function EditBookingDialog({
                             />
                         </div>
 
-                        {/* Input Durasi */}
                         <div className="grid gap-2">
                             <Label htmlFor="durasi">Durasi (Jam)</Label>
                             <Input 
@@ -166,7 +157,6 @@ export default function EditBookingDialog({
                         </div>
                     </div>
 
-                    {/* Input Lapangan */}
                     <div className="grid gap-2">
                         <Label>Pilih Lapangan</Label>
                         <Select 
