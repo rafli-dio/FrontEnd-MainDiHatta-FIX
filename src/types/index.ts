@@ -65,7 +65,7 @@ export interface Booking {
     jam_selesai: string;     
     durasi_jam?: number;     
     total_harga: number | string;
-    jumlah_dp?: number | string;
+    jumlah_bayar?: number | string;
     bukti_pembayaran?: string;
     bukti_pembayaran_url?: string;
     acara?: string;          
