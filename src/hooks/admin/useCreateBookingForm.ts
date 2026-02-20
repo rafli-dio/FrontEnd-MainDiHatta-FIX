@@ -17,6 +17,9 @@ export function useCreateBookingForm() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [statuses, setStatuses] = useState<StatusBooking[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]); 
+  
+  // TAMBAHAN: State untuk Maintenance
+  const [maintenances, setMaintenances] = useState<any[]>([]); 
 
   const [isManualBooking, setIsManualBooking] = useState(false);
   const [maxDuration, setMaxDuration] = useState(12);
@@ -42,12 +45,16 @@ export function useCreateBookingForm() {
   useEffect(() => {
     const init = async () => {
       try {
-        const [resLapangans, resUsers, resPayments, resStatuses, resBookings] = await Promise.all([
+        const [resLapangans, resUsers, resPayments, resStatuses, resBookings, resMaintenances] = await Promise.all([
           axios.get('/api/lapangans'),
           axios.get('/api/users'),
           axios.get('/api/paymentMethods'),
           axios.get('/api/statusBookings'),
           axios.get('/api/bookings'),
+          axios.get('/api/public/maintenances').catch((e) => {
+              console.warn("Gagal fetch maintenance", e);
+              return { data: [] }; 
+          })
         ]);
 
         // --- Helper Safe Array ---
@@ -78,6 +85,9 @@ export function useCreateBookingForm() {
         setStatuses(getSafeArray(resStatuses));
         setBookings(getSafeArray(resBookings));
 
+        // 5. Maintenances
+        setMaintenances(getSafeArray(resMaintenances));
+
         // Set Default Lapangan & Jam Operasional
         if (rawLapangans.length > 0) {
           const firstLap = rawLapangans[0];
@@ -91,7 +101,6 @@ export function useCreateBookingForm() {
         }
       } catch (e: any) {
         console.error('init create booking form', e);
-        // Jangan crash, tampilkan toast saja
         toast.error(e?.response?.data?.message || 'Gagal memuat data form booking.');
       }
     };
@@ -101,9 +110,7 @@ export function useCreateBookingForm() {
 
   // Update Jam Operasional saat lapangan berubah
   useEffect(() => {
-      // Safe check lapangans array
       const safeLapangans = Array.isArray(lapangans) ? lapangans : [];
-      
       if (formData.lapangan_id && safeLapangans.length > 0) {
           const selectedLap = safeLapangans.find(l => String(l.id) === String(formData.lapangan_id));
           if (selectedLap && selectedLap.jam_buka && selectedLap.jam_tutup) {
@@ -126,7 +133,6 @@ export function useCreateBookingForm() {
       const currentStartHour = parseInt(formData.jam_mulai.split(':')[0]);
       const selectedLapId = parseInt(String(formData.lapangan_id));
 
-      // Safe Bookings Access
       const safeBookings = Array.isArray(bookings) ? bookings : [];
 
       const upcomingBookings = safeBookings
@@ -179,6 +185,27 @@ export function useCreateBookingForm() {
         .map(b => new Date(b.tanggal_booking));
   };
 
+  const isDateUnderMaintenance = (date: Date) => {
+      if (!maintenances.length) return false;
+      
+      const checkDateStr = format(date, 'yyyy-MM-dd');
+      const selectedLapId = formData.lapangan_id ? parseInt(String(formData.lapangan_id)) : null;
+
+      return maintenances.some((m: any) => {
+          const isActive = m.is_active === true || m.is_active === 1 || m.is_active === '1';
+          if (!isActive) return false;
+          
+          const appliesToLapangan = !m.lapangan_id || parseInt(String(m.lapangan_id)) === selectedLapId;
+
+          if (!appliesToLapangan) return false;
+          const startDate = m.start_date ? String(m.start_date).substring(0, 10) : '';
+          const endDate = m.end_date ? String(m.end_date).substring(0, 10) : '';
+
+          // 4. Bandingkan
+          return checkDateStr >= startDate && checkDateStr <= endDate;
+      });
+  };
+
   const isTimeSlotBooked = (time: string) => {
       if (!formData.tanggal_booking || !formData.lapangan_id) return false;
       const selectedDateStr = format(formData.tanggal_booking, 'yyyy-MM-dd');
@@ -188,9 +215,7 @@ export function useCreateBookingForm() {
       const safeBookings = Array.isArray(bookings) ? bookings : [];
 
       return safeBookings.some(b => {
-          // Safety Check per Item
           if (!b || !b.tanggal_booking || !b.jam_mulai) return false;
-
           if(b.tanggal_booking !== selectedDateStr || b.lapangan_id !== selectedLapId || b.status_booking_id === 4) return false;
           
           const [startH] = b.jam_mulai.split(':').map(Number);
@@ -222,25 +247,20 @@ export function useCreateBookingForm() {
   };
 
   const handleSubmit = async () => {
-    // 1. Validasi Input Wajib
+    // Validasi
     if (!formData.lapangan_id || !formData.tanggal_booking || !formData.jam_mulai) {
       return toast.error('Isi semua field jadwal (lapangan, tanggal, jam mulai).');
     }
-
-    // 2. Validasi User (Manual vs Member)
     if (isManualBooking) {
       if (!formData.nama_pengirim) return toast.error('Isi nama pelanggan untuk booking manual.');
     } else {
       if (!formData.user_id) return toast.error('Pilih member / user untuk booking.');
     }
-
-    // 3. Validasi Bentrok Client-Side (Double Check)
     if (isTimeSlotBooked(formData.jam_mulai)) {
         return toast.error('Jam yang dipilih sudah terisi. Silakan pilih jam lain.');
     }
 
     setIsSaving(true);
-
     try {
       const payload: any = {
         lapangan_id: parseInt(String(formData.lapangan_id)),
@@ -260,7 +280,6 @@ export function useCreateBookingForm() {
       }
 
       const res = await axios.post('/api/bookings', payload);
-      
       const bookingId = res.data?.data?.id || res.data.id;
 
       if (formData.bukti_pembayaran) {
@@ -273,7 +292,6 @@ export function useCreateBookingForm() {
           });
       }
 
-  
       if (formData.status_booking_id && String(formData.status_booking_id) !== '1' && String(formData.status_booking_id) !== '2') {
           await axios.patch(`/api/bookings/${bookingId}/status`, {
             status_booking_id: parseInt(String(formData.status_booking_id))
@@ -281,13 +299,11 @@ export function useCreateBookingForm() {
       }
 
       toast.success('Booking berhasil dibuat.');
-      
       router.push(`/admin/bookings/success?id=${bookingId}`);
 
     } catch (error: any) {
       const status = error.response?.status;
       const data = error.response?.data;
-
       if (status === 422 && data?.errors) {
         const errorsArr = Object.values(data.errors) as string[][];
         const firstErr = errorsArr?.[0]?.[0];
@@ -301,22 +317,11 @@ export function useCreateBookingForm() {
   };
 
   return {
-    isSaving,
-    lapangans,
-    users, 
-    paymentMethods,
-    statuses,
-    isManualBooking,
-    setIsManualBooking,
-    formData,
-    setFormData,
-    getJamSelesai,
-    getEstimasiHarga,
-    handleSubmit,
-    getBookedDates,   
-    isTimeSlotBooked, 
-    maxDuration,
-    isTimePassed, 
-    jamOperasional 
+    isSaving, lapangans, users, paymentMethods, statuses,
+    isManualBooking, setIsManualBooking,
+    formData, setFormData,
+    getJamSelesai, getEstimasiHarga, handleSubmit,
+    getBookedDates, isTimeSlotBooked, maxDuration, isTimePassed, jamOperasional,
+    isDateUnderMaintenance 
   };
 }

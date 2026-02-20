@@ -42,7 +42,8 @@ export default function CreateBookingForm() {
         getBookedDates,   
         isTimeSlotBooked, 
         maxDuration,  
-        isTimePassed,    
+        isTimePassed,  
+        isDateUnderMaintenance  
     } = useCreateBookingForm();
 
     // --- 1. STATE JAM OPERASIONAL DINAMIS ---
@@ -194,8 +195,15 @@ export default function CreateBookingForm() {
                                         selected={formData.tanggal_booking}
                                         onSelect={(date) => setFormData({ ...formData, tanggal_booking: date })}
                                         initialFocus
-                                        // --- PERBAIKAN: DISABLE TANGGAL LEWAT ---
-                                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                        
+                                        disabled={(date) => {
+                                            const today = new Date();
+                                            today.setHours(0, 0, 0, 0); 
+                                            const isPast = date < today;
+                                            const isMaintenance = isDateUnderMaintenance(date);
+                                            return isPast || isMaintenance;
+                                        }}
+                                        
                                         modifiers={{ booked: getBookedDates() }}
                                         modifiersStyles={{ booked: { textDecoration: 'underline', color: '#D93F21', fontWeight: 'bold' } }}
                                     />
