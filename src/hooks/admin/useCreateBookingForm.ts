@@ -247,63 +247,63 @@ export function useCreateBookingForm() {
   };
 
   const handleSubmit = async () => {
-    // Validasi
+    // 1. Validasi Input Wajib
     if (!formData.lapangan_id || !formData.tanggal_booking || !formData.jam_mulai) {
       return toast.error('Isi semua field jadwal (lapangan, tanggal, jam mulai).');
     }
+    
+    // 2. Validasi User (Manual vs Member)
     if (isManualBooking) {
       if (!formData.nama_pengirim) return toast.error('Isi nama pelanggan untuk booking manual.');
     } else {
       if (!formData.user_id) return toast.error('Pilih member / user untuk booking.');
     }
+    
+    // 3. Validasi Bentrok
     if (isTimeSlotBooked(formData.jam_mulai)) {
         return toast.error('Jam yang dipilih sudah terisi. Silakan pilih jam lain.');
     }
 
     setIsSaving(true);
+    
     try {
-      const payload: any = {
-        lapangan_id: parseInt(String(formData.lapangan_id)),
-        tanggal_booking: format(formData.tanggal_booking, 'yyyy-MM-dd'),
-        jam_mulai: formData.jam_mulai,
-        durasi_jam: parseInt(String(formData.durasi_jam || '1')),
-        payment_method_id: formData.payment_method_id ? parseInt(String(formData.payment_method_id)) : undefined,
-        acara: formData.acara || undefined,
-        asal_bank: formData.asal_bank || undefined,
-        nama_pengirim: formData.nama_pengirim || undefined,
-        jumlah_bayar: formData.jumlah_bayar ? parseInt(String(formData.jumlah_bayar)) : undefined,
-        status_booking_id: formData.status_booking_id ? parseInt(String(formData.status_booking_id)) : 1,
-      };
-
-      if (!isManualBooking && formData.user_id) {
-          payload.user_id = parseInt(String(formData.user_id));
+      // 4. BUNGKUS SEMUA DATA DALAM FORMDATA (Termasuk File Foto)
+      const payload = new FormData();
+      
+      payload.append('lapangan_id', String(formData.lapangan_id));
+      payload.append('tanggal_booking', format(formData.tanggal_booking, 'yyyy-MM-dd'));
+      payload.append('jam_mulai', formData.jam_mulai);
+      payload.append('durasi_jam', String(formData.durasi_jam || '1'));
+      
+      if (formData.payment_method_id) payload.append('payment_method_id', String(formData.payment_method_id));
+      if (formData.status_booking_id) payload.append('status_booking_id', String(formData.status_booking_id));
+      if (formData.acara) payload.append('acara', formData.acara);
+      if (formData.asal_bank) payload.append('asal_bank', formData.asal_bank);
+      if (isManualBooking && formData.nama_pengirim) {
+          payload.append('nama_pengirim', formData.nama_pengirim);
+      } else if (!isManualBooking && formData.user_id) {
+          payload.append('user_id', String(formData.user_id));
       }
-
-      const res = await axios.post('/api/bookings', payload);
-      const bookingId = res.data?.data?.id || res.data.id;
 
       if (formData.bukti_pembayaran) {
-          const fileData = new FormData();
-          fileData.append('bukti_pembayaran', formData.bukti_pembayaran);
-          if (formData.jumlah_bayar) fileData.append('jumlah_bayar', formData.jumlah_bayar);
-          
-          await axios.post(`/api/bookings/${bookingId}/payment`, fileData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-          });
+          payload.append('bukti_pembayaran', formData.bukti_pembayaran);
       }
 
-      if (formData.status_booking_id && String(formData.status_booking_id) !== '1' && String(formData.status_booking_id) !== '2') {
-          await axios.patch(`/api/bookings/${bookingId}/status`, {
-            status_booking_id: parseInt(String(formData.status_booking_id))
-          });
-      }
+      // 5. HIT 1 API SAJA UNTUK SEMUANYA (Create, Upload, & Status)
+      const res = await axios.post('/api/bookings', payload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
+      const bookingId = res.data?.data?.id || res.data.id;
+
+      // 6. Berhasil dan Redirect
       toast.success('Booking berhasil dibuat.');
       router.push(`/admin/bookings/success?id=${bookingId}`);
 
     } catch (error: any) {
       const status = error.response?.status;
       const data = error.response?.data;
+      
       if (status === 422 && data?.errors) {
         const errorsArr = Object.values(data.errors) as string[][];
         const firstErr = errorsArr?.[0]?.[0];
