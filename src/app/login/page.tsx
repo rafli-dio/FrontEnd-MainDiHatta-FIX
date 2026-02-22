@@ -26,7 +26,10 @@ export default function LoginPage() {
         const redirect = async () => {
             if (!user) return;
             const roleName = user.role?.name_role;
-            const path = roleName === 'Admin' ? '/admin/dashboard' : roleName === 'Karyawan' ? '/karyawan/dashboard' : roleName === 'Pelanggan' ? '/pelanggan/home' : '/';
+            // hanya dua peran sekarang, admin dan pelanggan
+            const path = roleName === 'Admin' ? '/admin/dashboard' :
+                         roleName === 'Pelanggan' ? '/pelanggan/home' :
+                         '/';
             try {
                 await router.push(path);
             } finally {

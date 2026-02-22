@@ -43,8 +43,10 @@ export default function UserFilters({
                     <SelectTrigger><SelectValue placeholder="Filter Role" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Semua Role</SelectItem>
-                        {roles.map(role => (
-                            <SelectItem key={role.id} value={role.id.toString()}>{role.name_role}</SelectItem>
+                        {roles
+                            .filter(role => role.name_role !== 'Karyawan')
+                            .map(role => (
+                                <SelectItem key={role.id} value={role.id.toString()}>{role.name_role}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>

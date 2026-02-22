@@ -42,7 +42,7 @@ export function useProfilePage() {
 
     const getDashboardLink = () => {
         if (user?.role?.name_role === 'Admin') return '/admin/dashboard';
-        if (user?.role?.name_role === 'Karyawan') return '/karyawan/dashboard'; 
+        // role "Karyawan" tidak lagi digunakan
         return '/pelanggan/home';
     };
 

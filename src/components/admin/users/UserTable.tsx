@@ -32,7 +32,6 @@ export default function UserTable({
     const getRoleBadge = (roleName?: string) => {
         switch(roleName) {
             case 'Admin': return <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 shadow-none">Admin</Badge>;
-            case 'Karyawan': return <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 shadow-none">Karyawan</Badge>;
             case 'Pelanggan': return <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 shadow-none">Pelanggan</Badge>;
             default: return <Badge variant="outline">{roleName}</Badge>;
         }

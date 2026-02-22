@@ -35,8 +35,9 @@ export function useUsersPage() {
                 return Array.isArray(data) ? data : [];
             };
 
-            setUsers(getSafeArray(resUsers));
-            setRoles(getSafeArray(resRoles));
+            // buang data karyawan jika ada, karena peran ini tidak lagi dipakai
+            setUsers(getSafeArray(resUsers).filter((u: any) => u?.role?.name_role !== 'Karyawan'));
+            setRoles(getSafeArray(resRoles).filter((r: any) => r?.name_role !== 'Karyawan'));
 
         } catch (error) {
             console.error("Error fetching data:", error);

@@ -94,8 +94,10 @@ export default function UserFormDialog({
                             <Select value={formData.role_id} onValueChange={(v) => setFormData({...formData, role_id: v})}>
                                 <SelectTrigger><SelectValue placeholder="Pilih Role" /></SelectTrigger>
                                 <SelectContent>
-                                    {roles.map(r => (
-                                        <SelectItem key={r.id} value={r.id.toString()}>{r.name_role}</SelectItem>
+                                    {roles
+                                        .filter(r => r.name_role !== 'Karyawan')
+                                        .map(r => (
+                                            <SelectItem key={r.id} value={r.id.toString()}>{r.name_role}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
