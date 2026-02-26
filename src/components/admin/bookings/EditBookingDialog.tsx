@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import axios from '@/lib/axios';
 import { toast } from 'sonner';
-import { Loader2, Save, CalendarClock, Info } from 'lucide-react';
+import { Loader2, Save, CalendarClock, Info, Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 // UI Components
 import { 
@@ -15,6 +18,8 @@ import { Label } from '@/components/ui/label';
 import { 
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Booking, Lapangan } from '@/types'; 
 
 interface EditBookingDialogProps {
@@ -33,8 +38,8 @@ export default function EditBookingDialog({
     const [isLoading, setIsLoading] = useState(false);
     const [lapangans, setLapangans] = useState<Lapangan[]>([]);
     const [allBookings, setAllBookings] = useState<Booking[]>([]); 
+    const [maintenances, setMaintenances] = useState<any[]>([]); 
     
-    // State Form (lapangan_id tetap ada di state untuk hitung bentrok, tapi tidak di-render di form)
     const [formData, setFormData] = useState({
         tanggal_booking: '',
         jam_mulai: '',
@@ -42,14 +47,14 @@ export default function EditBookingDialog({
         lapangan_id: '' 
     });
 
-    // 1. Fetch Lapangan & Semua Booking Saat Dialog Dibuka
     useEffect(() => {
         const fetchData = async () => {
             if (!open) return;
             try {
-                const [resLap, resBook] = await Promise.all([
+                const [resLap, resBook, resMaint] = await Promise.all([
                     axios.get('/api/lapangans'),
-                    axios.get('/api/bookings') 
+                    axios.get('/api/bookings'),
+                    axios.get('/api/public/maintenances').catch(() => ({ data: [] }))
                 ]);
                 
                 const dataLap = resLap.data?.data || resLap.data;
@@ -57,6 +62,9 @@ export default function EditBookingDialog({
 
                 const dataBook = resBook.data?.data || resBook.data;
                 if (Array.isArray(dataBook)) setAllBookings(dataBook);
+
+                const dataMaint = resMaint.data?.data || resMaint.data || [];
+                if (Array.isArray(dataMaint)) setMaintenances(dataMaint);
             } catch (error) {
                 console.error("Gagal load data", error);
             }
@@ -71,14 +79,18 @@ export default function EditBookingDialog({
                 tanggal_booking: booking.tanggal_booking,
                 jam_mulai: booking.jam_mulai ? booking.jam_mulai.substring(0, 5) : '',
                 durasi_jam: Number(booking.durasi_jam) || 1,
-                lapangan_id: String(booking.lapangan_id) // Set default ke lapangan saat ini
+                lapangan_id: String(booking.lapangan_id)
             });
         }
     }, [booking, open]);
 
-    // --- LOGIKA CEK BENTROK FRONTEND ---
+    const handleCalendarSelect = (date: Date | undefined) => {
+        if (date) {
+            setFormData({ ...formData, tanggal_booking: format(date, 'yyyy-MM-dd') });
+        }
+    };
+
     
-    // A. Cari booking yang ada di tanggal & lapangan ini (Kecuali booking ini sendiri)
     const bookingsOnDate = allBookings.filter(b => 
         b.lapangan_id === Number(formData.lapangan_id) && 
         b.tanggal_booking === formData.tanggal_booking &&
@@ -86,7 +98,6 @@ export default function EditBookingDialog({
         ![4, 6].includes(b.status_booking_id) 
     );
 
-    // B. Hitung Jam Operasional & Generate Pilihan Jam
     const selectedLapangan = lapangans.find(l => l.id === Number(formData.lapangan_id));
     const jamBuka = selectedLapangan?.jam_buka ? parseInt(selectedLapangan.jam_buka.substring(0, 2)) : 8;
     const jamTutup = selectedLapangan?.jam_tutup ? parseInt(selectedLapangan.jam_tutup.substring(0, 2)) : 23;
@@ -95,7 +106,6 @@ export default function EditBookingDialog({
     for (let i = jamBuka; i < jamTutup; i++) {
         const timeString = `${i.toString().padStart(2, '0')}:00`;
         
-        // Cek apakah jam ini menabrak durasi booking orang lain
         const isBooked = bookingsOnDate.some(b => {
             const startHour = parseInt(b.jam_mulai.substring(0, 2));
             const endHour = parseInt(b.jam_selesai.substring(0, 2));
@@ -105,6 +115,20 @@ export default function EditBookingDialog({
         timeSlots.push({ time: timeString, isBooked });
     }
 
+    const isDateUnderMaintenance = (date: Date) => {
+        if (!maintenances.length) return false;
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const lapId = Number(formData.lapangan_id);
+        return maintenances.some((m: any) => {
+            const active = m.is_active === true || m.is_active === 1 || m.is_active === '1';
+            if (!active) return false;
+            if (m.lapangan_id && Number(m.lapangan_id) !== lapId) return false;
+            const start = m.start_date ? String(m.start_date).substring(0, 10) : '';
+            const end = m.end_date ? String(m.end_date).substring(0, 10) : '';
+            return dateStr >= start && dateStr <= end;
+        });
+    };
+
     const handleSave = async () => {
         if (!booking) return;
         setIsLoading(true);
@@ -113,7 +137,7 @@ export default function EditBookingDialog({
             await axios.put(`/api/bookings/${booking.id}`, {
                 ...formData,
                 durasi_jam: Number(formData.durasi_jam),
-                lapangan_id: Number(formData.lapangan_id) // Tetap dikirim sesuai data awal
+                lapangan_id: Number(formData.lapangan_id) 
             });
             
             toast.success("Reschedule Berhasil!", {
@@ -158,22 +182,54 @@ export default function EditBookingDialog({
                     <div className="p-3 bg-gray-50 border rounded-md text-sm text-gray-600 space-y-1">
                         <p><strong>Kode:</strong> {booking.kode_booking}</p>
                         <p><strong>Nama:</strong> {booking.user?.name || booking.nama_pengirim}</p>
-                        {/* Opsional: Tampilkan nama lapangan sebagai info statis */}
                         <p><strong>Lapangan:</strong> {booking.lapangan?.nama_lapangan || '-'}</p>
                     </div>
 
                     {/* Input Tanggal */}
                     <div className="grid gap-2">
                         <Label htmlFor="tanggal">Tanggal Baru</Label>
-                        <Input 
-                            id="tanggal"
-                            type="date" 
-                            value={formData.tanggal_booking}
-                            onChange={(e) => setFormData({...formData, tanggal_booking: e.target.value})}
-                            required
-                        />
-                        
-                        {/* INDIKATOR JADWAL TERISI */}
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-full justify-start text-left font-normal border-gray-300 bg-gray-50 h-12 rounded-lg hover:bg-gray-100",
+                                        !formData.tanggal_booking && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {formData.tanggal_booking ? (
+                                        format(new Date(formData.tanggal_booking), "EEEE, dd MMMM yyyy", { locale: localeId })
+                                    ) : (
+                                        <span>Pilih tanggal baru</span>
+                                    )}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 bg-white rounded-xl shadow-2xl border-none" align="start">
+                                <div className="p-4 bg-white rounded-xl">
+                                    <Calendar
+                                        mode="single"
+                                        selected={
+                                            formData.tanggal_booking ? new Date(formData.tanggal_booking) : undefined
+                                        }
+                                        onSelect={handleCalendarSelect}
+                                        initialFocus
+                                        disabled={[
+                                            (date) => date < new Date(new Date().setHours(0, 0, 0, 0)),
+                                            (date) => isDateUnderMaintenance(date),
+                                        ]}
+                                    />
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        {formData.tanggal_booking && isDateUnderMaintenance(new Date(formData.tanggal_booking)) && (
+                            <div className="mt-2 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
+                                <Info className="w-3.5 h-3.5" />
+                                <span>Lapangan tutup pada tanggal ini (Maintenance).</span>
+                            </div>
+                        )}
+
                         {formData.tanggal_booking && bookingsOnDate.length > 0 && (
                             <div className="mt-2 p-3 bg-orange-50 border border-orange-100 rounded-md">
                                 <p className="text-xs text-orange-800 font-semibold flex items-center mb-2">
@@ -195,7 +251,6 @@ export default function EditBookingDialog({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Input Jam Mulai */}
                         <div className="grid gap-2">
                             <Label>Jam Mulai</Label>
                             <Select 
