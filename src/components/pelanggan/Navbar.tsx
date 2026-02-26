@@ -96,8 +96,20 @@ export default function Navbar() {
 
                                 <Link href="/profile" className="hidden md:block">
                                     <span className="text-sm text-gray-300 hover:text-white transition font-medium flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center border border-gray-600">
-                                            <User className="w-4 h-4" />
+                                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center border border-gray-600 overflow-hidden">
+                                            {user.foto_url ? (
+                                                <img
+                                                    src={user.foto_url}
+                                                    alt="avatar"
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        // jika path rusak, fallback
+                                                        (e.currentTarget as HTMLImageElement).src = '/default-avatar.png';
+                                                    }}
+                                                />
+                                            ) : (
+                                                <User className="w-4 h-4" />
+                                            )}
                                         </div>
                                         <span className="max-w-[100px] truncate">{user.name.split(' ')[0]}</span>
                                     </span>
@@ -164,8 +176,19 @@ export default function Navbar() {
                                         ) : user ? (
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-3 px-2">
-                                                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                                                        <User className="w-5 h-5 text-gray-300" />
+                                                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
+                                                        {user.foto_url ? (
+                                                            <img
+                                                                src={user.foto_url}
+                                                                alt="avatar"
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.currentTarget as HTMLImageElement).src = '/default-avatar.png';
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <User className="w-5 h-5 text-gray-300" />
+                                                        )}
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-white">{user.name}</p>
