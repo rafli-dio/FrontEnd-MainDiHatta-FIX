@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import axios from '@/lib/axios'; 
@@ -40,7 +40,7 @@ const baseMenuItems: MenuItem[] = [
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const { logout } = useAuth();
+    const { user, logout, isLoading: authLoading } = useAuth({ middleware: 'auth' });
     const { isSidebarOpen, closeSidebar } = useAdmin();
 
     const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
@@ -58,20 +58,32 @@ export default function Sidebar() {
     };
 
    
+    // fetch jumlah booking pending setiap kali user tersedia (atau ketika auth selesai)
+    // helper untuk mengambil jumlah booking yang menunggu konfirmasi
+    const fetchPendingCount = useCallback(async () => {
+        if (!user) return;
+        try {
+            const response = await axios.get('/api/bookings');
+            const rawData = response.data;
+            let bookingsArray: any[] = [];
+            if (Array.isArray(rawData)) bookingsArray = rawData;
+            else if (rawData?.data && Array.isArray(rawData.data)) bookingsArray = rawData.data;
+            const count = bookingsArray.filter((b: any) => b?.status_booking_id === 2).length;
+            setPendingBookingsCount(count);
+        } catch (error) {
+            console.error('Failed to fetch pending bookings', error);
+            setPendingBookingsCount(0);
+        }
+    }, [user]);
+
     useEffect(() => {
-        const fetchPendingCount = async () => {
-            try {
-                const response = await axios.get('/api/bookings');
-                const rawData = response.data;
-                let bookingsArray: any[] = [];
-                if (Array.isArray(rawData)) bookingsArray = rawData;
-                else if (rawData?.data && Array.isArray(rawData.data)) bookingsArray = rawData.data;
-                const count = bookingsArray.filter((b: any) => b?.status_booking_id === 2).length;
-                setPendingBookingsCount(count);
-            } catch (error) { console.error(error); setPendingBookingsCount(0); }
-        };
+        if (!user || authLoading) return;
         fetchPendingCount();
-    }, []);
+
+        // juga sediakan polling agar badge tetap update
+        const interval = setInterval(fetchPendingCount, 60000); // tiap menit
+        return () => clearInterval(interval);
+    }, [user, authLoading, fetchPendingCount]);
 
     useEffect(() => {
         baseMenuItems.forEach(item => {
