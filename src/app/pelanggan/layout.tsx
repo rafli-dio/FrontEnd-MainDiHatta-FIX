@@ -1,4 +1,3 @@
-// PERUBAHAN: Import dari folder lokal 'homepage' di dalam 'app/pelanggan'
 import Footer from '@/components/pelanggan/Footer';
 import Navbar from '@/components/pelanggan/Navbar';
 
