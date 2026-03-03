@@ -2,13 +2,13 @@
 
 import { useState } from 'react'; // Import useState
 import Link from 'next/link';
-import { 
-    Plus, 
-    RefreshCcw, 
-    List, 
-    Calendar as CalendarIcon, 
-    ChevronLeft, 
-    ChevronRight 
+import {
+    Plus,
+    RefreshCcw,
+    List,
+    Calendar as CalendarIcon,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 // UI Components
@@ -21,14 +21,14 @@ import BookingFilters from '@/components/admin/bookings/BookingFilters';
 import BookingTable from '@/components/admin/bookings/BookingTable';
 import BookingDetailDialog from '@/components/admin/bookings/BookingDetailDialog';
 import EditBookingDialog from '@/components/admin/bookings/EditBookingDialog'; // IMPORT DIALOG EDIT (Pastikan path sesuai)
-import BookingCalendarView from '@/components/admin/bookings/BookingCalendarView'; 
+import BookingCalendarView from '@/components/admin/bookings/BookingCalendarView';
 import { Booking } from '@/types'; // Import tipe Booking
 
 export default function BookingAdminPage() {
     const {
-        bookings,          
+        bookings,
         loading,
-        totalData,         
+        totalData,
         viewMode,
         setViewMode,
         searchQuery, setSearchQuery,
@@ -45,7 +45,8 @@ export default function BookingAdminPage() {
         handleViewDetail,
         handleApprove,
         handleReject,
-        fetchBookings
+        fetchBookings,
+        completionStatus, setCompletionStatus,
     } = useBookingAdminPage();
 
     // --- STATE TAMBAHAN UNTUK EDIT / RESCHEDULE ---
@@ -64,8 +65,8 @@ export default function BookingAdminPage() {
     };
 
     return (
-        <div className="space-y-6 pb-20 p-6"> 
-            
+        <div className="space-y-6 pb-20 p-6">
+
             {/* --- HEADER --- */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
@@ -75,11 +76,11 @@ export default function BookingAdminPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         size="icon"
-                        onClick={fetchBookings} 
-                        title="Refresh Data" 
+                        onClick={fetchBookings}
+                        title="Refresh Data"
                         disabled={loading}
                         className="h-10 w-10"
                     >
@@ -97,17 +98,28 @@ export default function BookingAdminPage() {
             <Tabs defaultValue="table" value={viewMode} onValueChange={setViewMode} className="w-full">
                 <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6 p-1 bg-gray-100/80">
                     <TabsTrigger value="table" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <List className="w-4 h-4 mr-2"/> Daftar List
+                        <List className="w-4 h-4 mr-2" /> Daftar List
                     </TabsTrigger>
                     <TabsTrigger value="calendar" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <CalendarIcon className="w-4 h-4 mr-2"/> Kalender Jadwal
+                        <CalendarIcon className="w-4 h-4 mr-2" /> Kalender Jadwal
                     </TabsTrigger>
                 </TabsList>
 
                 {/* --- TABEL VIEW --- */}
                 <TabsContent value="table" className="space-y-6 mt-0 animate-in fade-in-50 duration-300">
-                    
-                    <BookingFilters 
+
+                    <Tabs value={completionStatus} onValueChange={(val) => setCompletionStatus(val as 'belum' | 'selesai')} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-6 p-1 bg-gray-100/80 rounded-xl">
+                            <TabsTrigger value="belum" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg py-2">
+                                Belum Selesai (Aktif)
+                            </TabsTrigger>
+                            <TabsTrigger value="selesai" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg py-2">
+                                Sudah Selesai (Riwayat)
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
+                    <BookingFilters
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
                         filterStatus={filterStatus}
@@ -115,13 +127,13 @@ export default function BookingAdminPage() {
                     />
 
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <BookingTable 
+                        <BookingTable
                             bookings={bookings}
                             loading={loading}
                             onView={handleViewDetail}
                             onEdit={handleEditClick} // Masukkan Handler Edit di sini
                         />
-                        
+
                         {/* PAGINATION */}
                         {!loading && totalData > 0 && (
                             <div className="flex items-center justify-between p-4 border-t bg-gray-50/50">
@@ -159,7 +171,7 @@ export default function BookingAdminPage() {
                 {/* --- CALENDAR VIEW --- */}
                 <TabsContent value="calendar" className="mt-0 animate-in fade-in-50 duration-300">
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
-                        <BookingCalendarView 
+                        <BookingCalendarView
                             selectedDate={selectedDate}
                             setSelectedDate={setSelectedDate}
                             bookedDays={bookedDays}
@@ -171,9 +183,9 @@ export default function BookingAdminPage() {
             </Tabs>
 
             {/* --- DIALOGS --- */}
-            
+
             {/* 1. Detail Dialog (Approve/Reject) */}
-            <BookingDetailDialog 
+            <BookingDetailDialog
                 isOpen={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
                 booking={selectedBooking}
@@ -185,7 +197,7 @@ export default function BookingAdminPage() {
 
             {/* 2. Edit / Reschedule Dialog (BARU) */}
             {bookingToEdit && (
-                <EditBookingDialog 
+                <EditBookingDialog
                     open={isEditOpen}
                     onOpenChange={setIsEditOpen}
                     booking={bookingToEdit}

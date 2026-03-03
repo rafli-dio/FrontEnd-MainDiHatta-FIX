@@ -14,22 +14,22 @@ interface BookingFiltersProps {
     setFilterStatus: (val: string) => void;
 }
 
-export default function BookingFilters({ 
-    searchQuery, setSearchQuery, filterStatus, setFilterStatus 
+export default function BookingFilters({
+    searchQuery, setSearchQuery, filterStatus, setFilterStatus
 }: BookingFiltersProps) {
     return (
         <Card className="p-4 border shadow-sm">
             <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                    <Input 
-                        placeholder="Cari Kode Booking / Nama Pelanggan..." 
-                        className="pl-9 pr-8" 
+                    <Input
+                        placeholder="Cari Kode Booking / Nama Pelanggan..."
+                        className="pl-9 pr-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     {searchQuery && (
-                        <button 
+                        <button
                             onClick={() => setSearchQuery('')}
                             className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                         >
@@ -50,6 +50,7 @@ export default function BookingFilters({
                             <SelectItem value="3">Terkonfirmasi</SelectItem>
                             <SelectItem value="5">Selesai</SelectItem>
                             <SelectItem value="4">Dibatalkan</SelectItem>
+                            <SelectItem value="6">Batal Admin</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

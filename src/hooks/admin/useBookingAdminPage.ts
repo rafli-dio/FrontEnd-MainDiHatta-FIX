@@ -19,6 +19,7 @@ export function useBookingAdminPage() {
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [completionStatus, setCompletionStatus] = useState<'belum' | 'selesai'>('belum');
 
     const processAutoFinish = useCallback((data: any[]) => {
         if (!Array.isArray(data)) return [];
@@ -99,7 +100,11 @@ export function useBookingAdminPage() {
                 
             const matchStatus = filterStatus === 'all' || item.status_booking_id?.toString() === filterStatus;
             
-            return matchSearch && matchStatus;
+            // Filter by completionStatus
+            const isCompleted = [4, 5, 6].includes(item.status_booking_id);
+            const matchCompletion = completionStatus === 'selesai' ? isCompleted : !isCompleted;
+            
+            return matchSearch && matchStatus && matchCompletion;
         })
         .sort((a, b) => {
             const dateA = new Date(`${a.tanggal_booking}T${a.jam_mulai}`);
@@ -203,6 +208,7 @@ export function useBookingAdminPage() {
         viewMode, setViewMode,
         searchQuery, setSearchQuery,
         filterStatus, setFilterStatus,
+        completionStatus, setCompletionStatus,
         selectedDate, setSelectedDate,
         bookingsOnSelectedDate,
         bookedDays,
