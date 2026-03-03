@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { Loader2, Lock } from 'lucide-react';
+import { Loader2, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +29,9 @@ export default function UserFormDialog({
     roles
 }: UserFormDialogProps) {
     const [isSaving, setIsSaving] = useState(false);
-    
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -50,13 +52,13 @@ export default function UserFormDialog({
                 nomor_telepon: initialData.nomor_telepon || '',
                 alamat: initialData.alamat || '',
                 role_id: initialData.role_id.toString(),
-                password: '', 
+                password: '',
                 password_confirmation: '',
             });
         } else if (isOpen && !initialData) {
             // Mode Tambah (Reset)
             setFormData({
-                name: '', email: '', nomor_telepon: '', alamat: '', role_id: '', 
+                name: '', email: '', nomor_telepon: '', alamat: '', role_id: '',
                 password: '', password_confirmation: ''
             });
         }
@@ -81,36 +83,36 @@ export default function UserFormDialog({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2 col-span-2">
                             <Label>Nama Lengkap <span className="text-red-500">*</span></Label>
-                            <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="Nama User" />
+                            <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required placeholder="Nama User" />
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label>Email <span className="text-red-500">*</span></Label>
-                            <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required placeholder="email@domain.com" />
+                            <Input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required placeholder="email@domain.com" />
                         </div>
 
                         <div className="space-y-2">
                             <Label>Role <span className="text-red-500">*</span></Label>
-                            <Select value={formData.role_id} onValueChange={(v) => setFormData({...formData, role_id: v})}>
+                            <Select value={formData.role_id} onValueChange={(v) => setFormData({ ...formData, role_id: v })}>
                                 <SelectTrigger><SelectValue placeholder="Pilih Role" /></SelectTrigger>
                                 <SelectContent>
                                     {roles
                                         .filter(r => r.name_role !== 'Karyawan')
                                         .map(r => (
                                             <SelectItem key={r.id} value={r.id.toString()}>{r.name_role}</SelectItem>
-                                    ))}
+                                        ))}
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <div className="space-y-2">
                             <Label>Nomor Telepon</Label>
-                            <Input value={formData.nomor_telepon} onChange={e => setFormData({...formData, nomor_telepon: e.target.value})} placeholder="08..." />
+                            <Input value={formData.nomor_telepon} onChange={e => setFormData({ ...formData, nomor_telepon: e.target.value })} placeholder="08..." />
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label>Alamat</Label>
-                            <Input value={formData.alamat} onChange={e => setFormData({...formData, alamat: e.target.value})} placeholder="Alamat lengkap" />
+                            <Input value={formData.alamat} onChange={e => setFormData({ ...formData, alamat: e.target.value })} placeholder="Alamat lengkap" />
                         </div>
                     </div>
 
@@ -121,13 +123,45 @@ export default function UserFormDialog({
                             <span className="text-sm font-medium text-gray-700">Pengaturan Keamanan</span>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                            <div className="space-y-2 relative">
                                 <Label>Password {initialData && <span className="text-xs font-normal text-gray-500">(Kosongkan jika tidak ubah)</span>}</Label>
-                                <Input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required={!initialData} placeholder={initialData ? "******" : "Wajib diisi"} />
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        value={formData.password}
+                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        required={!initialData}
+                                        placeholder={initialData ? "******" : "Wajib diisi"}
+                                        className="pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 relative">
                                 <Label>Konfirmasi Password</Label>
-                                <Input type="password" value={formData.password_confirmation} onChange={e => setFormData({...formData, password_confirmation: e.target.value})} required={!initialData || formData.password !== ''} placeholder={initialData ? "******" : "Wajib diisi"} />
+                                <div className="relative">
+                                    <Input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        value={formData.password_confirmation}
+                                        onChange={e => setFormData({ ...formData, password_confirmation: e.target.value })}
+                                        required={!initialData || formData.password !== ''}
+                                        placeholder={initialData ? "******" : "Wajib diisi"}
+                                        className="pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
