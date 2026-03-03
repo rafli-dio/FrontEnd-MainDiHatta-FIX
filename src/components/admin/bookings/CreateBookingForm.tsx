@@ -39,11 +39,11 @@ export default function CreateBookingForm() {
         getJamSelesai,
         getEstimasiHarga,
         handleSubmit,
-        getBookedDates,   
-        isTimeSlotBooked, 
-        maxDuration,  
-        isTimePassed,  
-        isDateUnderMaintenance  
+        getBookedDates,
+        isTimeSlotBooked,
+        maxDuration,
+        isTimePassed,
+        isDateUnderMaintenance
     } = useCreateBookingForm();
 
     // --- 1. STATE JAM OPERASIONAL DINAMIS ---
@@ -78,29 +78,29 @@ export default function CreateBookingForm() {
 
     // Generate Opsi Jam
     const timeOptions = Array.from(
-        { length: jamOperasional.tutup - jamOperasional.buka }, 
+        { length: jamOperasional.tutup - jamOperasional.buka },
         (_, i) => {
-            const hour = i + jamOperasional.buka; 
+            const hour = i + jamOperasional.buka;
             return `${String(hour).padStart(2, '0')}:00`;
         }
     );
 
-    const formatRupiah = (num: number) => 
+    const formatRupiah = (num: number) =>
         new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
     const confirmedStatus = statuses.find(s => s.nama_status.toLowerCase() === 'terkonfirmasi');
-    const confirmedStatusId = confirmedStatus ? String(confirmedStatus.id) : '3';
+    const confirmedStatusId = confirmedStatus ? String(confirmedStatus.id) : '2';
 
     // Auto set status Terkonfirmasi
     useEffect(() => {
         if (formData.status_booking_id === '1' || formData.status_booking_id === '') {
-             setFormData((prev: any) => ({ ...prev, status_booking_id: confirmedStatusId }));
+            setFormData((prev: any) => ({ ...prev, status_booking_id: confirmedStatusId }));
         }
     }, [confirmedStatusId, formData.status_booking_id, setFormData]);
 
     return (
         <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
-            
+
             {/* KARTU 1: INFO PENYEWA */}
             <Card>
                 <CardHeader className="pb-3 border-b mb-4">
@@ -112,23 +112,23 @@ export default function CreateBookingForm() {
                             <Label htmlFor="mode-manual" className="text-xs cursor-pointer font-medium text-gray-600">
                                 {isManualBooking ? 'Mode Tamu (Walk-in)' : 'Mode Member'}
                             </Label>
-                            <Switch 
-                                id="mode-manual" 
-                                checked={isManualBooking} 
-                                onCheckedChange={setIsManualBooking} 
+                            <Switch
+                                id="mode-manual"
+                                checked={isManualBooking}
+                                onCheckedChange={setIsManualBooking}
                             />
                         </div>
                     </div>
                 </CardHeader>
-                
+
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {isManualBooking ? (
                         <div className="space-y-2">
                             <Label>Nama Pelanggan (Manual) <span className="text-red-500">*</span></Label>
-                            <Input 
-                                placeholder="Cth: Pak Budi (Umum)" 
-                                value={formData.nama_pengirim} 
-                                onChange={(e) => setFormData({ ...formData, nama_pengirim: e.target.value })} 
+                            <Input
+                                placeholder="Cth: Pak Budi (Umum)"
+                                value={formData.nama_pengirim}
+                                onChange={(e) => setFormData({ ...formData, nama_pengirim: e.target.value })}
                                 className="bg-yellow-50 border-yellow-200 focus:border-yellow-400"
                             />
                             <p className="text-[10px] text-gray-500">Nama ini akan dicatat sebagai penyewa.</p>
@@ -136,7 +136,7 @@ export default function CreateBookingForm() {
                     ) : (
                         <div className="space-y-2">
                             <Label>Pilih Member <span className="text-red-500">*</span></Label>
-                            <Select 
+                            <Select
                                 value={formData.user_id ? String(formData.user_id) : undefined}
                                 onValueChange={(v) => setFormData({ ...formData, user_id: v })}
                             >
@@ -154,10 +154,10 @@ export default function CreateBookingForm() {
                     )}
                     <div className="space-y-2">
                         <Label>Nama Kegiatan / Club</Label>
-                        <Input 
-                            placeholder="Cth: Latihan Rutin, Turnamen Kecil" 
-                            value={formData.acara} 
-                            onChange={(e) => setFormData({ ...formData, acara: e.target.value })} 
+                        <Input
+                            placeholder="Cth: Latihan Rutin, Turnamen Kecil"
+                            value={formData.acara}
+                            onChange={(e) => setFormData({ ...formData, acara: e.target.value })}
                         />
                     </div>
                 </CardContent>
@@ -179,7 +179,7 @@ export default function CreateBookingForm() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label>Tanggal Main <span className="text-red-500">*</span></Label>
                             <Popover>
@@ -195,15 +195,15 @@ export default function CreateBookingForm() {
                                         selected={formData.tanggal_booking}
                                         onSelect={(date) => setFormData({ ...formData, tanggal_booking: date })}
                                         initialFocus
-                                        
+
                                         disabled={(date) => {
                                             const today = new Date();
-                                            today.setHours(0, 0, 0, 0); 
+                                            today.setHours(0, 0, 0, 0);
                                             const isPast = date < today;
                                             const isMaintenance = isDateUnderMaintenance(date);
                                             return isPast || isMaintenance;
                                         }}
-                                        
+
                                         modifiers={{ booked: getBookedDates() }}
                                         modifiersStyles={{ booked: { textDecoration: 'underline', color: '#D93F21', fontWeight: 'bold' } }}
                                     />
@@ -222,10 +222,10 @@ export default function CreateBookingForm() {
                                     </span>
                                 )}
                             </div>
-                            
-                            <Select 
-                                value={formData.jam_mulai} 
-                                onValueChange={(v) => setFormData({ ...formData, jam_mulai: v })} 
+
+                            <Select
+                                value={formData.jam_mulai}
+                                onValueChange={(v) => setFormData({ ...formData, jam_mulai: v })}
                                 disabled={!formData.tanggal_booking || !formData.lapangan_id}
                             >
                                 <SelectTrigger><SelectValue placeholder="Pilih Jam" /></SelectTrigger>
@@ -236,13 +236,13 @@ export default function CreateBookingForm() {
                                             const isPassed = isTimePassed(time);
                                             const isDisabled = isBooked || isPassed;
                                             return (
-                                                <SelectItem 
-                                                    key={time} 
+                                                <SelectItem
+                                                    key={time}
                                                     value={time}
-                                                    disabled={isDisabled} 
+                                                    disabled={isDisabled}
                                                     className={isDisabled ? "text-gray-400 bg-gray-50 cursor-not-allowed opacity-50" : ""}
                                                 >
-                                                    {time} 
+                                                    {time}
                                                     {isBooked && " (Terisi)"}
                                                     {isPassed && !isBooked && " (Lewat)"}
                                                 </SelectItem>
@@ -263,18 +263,18 @@ export default function CreateBookingForm() {
                                     <span className="text-[10px] text-orange-600 font-bold">Max: {maxDuration} Jam</span>
                                 )}
                             </div>
-                            <Input 
-                                type="number" 
-                                min="1" 
-                                max={maxDuration} 
-                                value={formData.durasi_jam} 
+                            <Input
+                                type="number"
+                                min="1"
+                                max={maxDuration}
+                                value={formData.durasi_jam}
                                 onChange={e => {
                                     let val = parseInt(e.target.value);
-                                    if(isNaN(val)) val = 1;
-                                    if(val > maxDuration) val = maxDuration; 
-                                    if(val < 1) val = 1;
+                                    if (isNaN(val)) val = 1;
+                                    if (val > maxDuration) val = maxDuration;
+                                    if (val < 1) val = 1;
                                     setFormData({ ...formData, durasi_jam: String(val) })
-                                }} 
+                                }}
                                 disabled={!formData.jam_mulai}
                             />
                             {parseInt(formData.durasi_jam) === maxDuration && formData.jam_mulai && (
@@ -309,7 +309,7 @@ export default function CreateBookingForm() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Metode Pembayaran <span className="text-red-500">*</span></Label>
-                                <Select 
+                                <Select
                                     value={formData.payment_method_id ? String(formData.payment_method_id) : undefined}
                                     onValueChange={(v) => setFormData({ ...formData, payment_method_id: v })}
                                 >
@@ -321,11 +321,11 @@ export default function CreateBookingForm() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Jumlah Bayar (Rp)</Label>
-                                <Input 
-                                    type="text" 
-                                    placeholder="0" 
-                                    value={formData.jumlah_bayar} 
-                                    onChange={e => setFormData({ ...formData, jumlah_bayar: e.target.value })} 
+                                <Input
+                                    type="text"
+                                    placeholder="0"
+                                    value={formData.jumlah_bayar}
+                                    onChange={e => setFormData({ ...formData, jumlah_bayar: e.target.value })}
                                 />
                                 <p className="text-[10px] text-gray-500">Jika lunas, isi sesuai total tagihan.</p>
                             </div>
@@ -334,10 +334,10 @@ export default function CreateBookingForm() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Status Booking <span className="text-red-500">*</span></Label>
-                                <Select 
+                                <Select
                                     value={formData.status_booking_id}
                                     onValueChange={(v) => setFormData({ ...formData, status_booking_id: v })}
-                                    disabled={true} 
+                                    disabled={true}
                                 >
                                     <SelectTrigger className="font-bold text-green-700 bg-green-50 border-green-200">
                                         <SelectValue placeholder="Pilih Status" />
@@ -353,15 +353,15 @@ export default function CreateBookingForm() {
                                     <p>Booking manual otomatis dianggap <b>"Terkonfirmasi"</b> agar tercatat di Laporan Keuangan.</p>
                                 </div>
                             </div>
-                            
-                             <div className="space-y-2">
-                                 <Label>Asal Bank / Keterangan (Opsional)</Label>
-                                 <Input 
+
+                            <div className="space-y-2">
+                                <Label>Asal Bank / Keterangan (Opsional)</Label>
+                                <Input
                                     placeholder="Cth: Cash Tunai"
                                     value={formData.asal_bank}
                                     onChange={e => setFormData({ ...formData, asal_bank: e.target.value })}
-                                 />
-                             </div>
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -369,8 +369,8 @@ export default function CreateBookingForm() {
                     <div className="space-y-2">
                         <Label>Upload Bukti (Opsional)</Label>
                         <div className="relative">
-                            <Input 
-                                type="file" 
+                            <Input
+                                type="file"
                                 accept="image/*"
                                 onChange={(e) => {
                                     if (e.target.files && e.target.files[0]) {
@@ -387,18 +387,18 @@ export default function CreateBookingForm() {
 
             <div className="flex justify-end gap-4">
                 <Link href="/admin/bookings">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         type="button"
                         className="h-12 px-8 text-base font-semibold"
                     >
                         Batal
                     </Button>
                 </Link>
-                
-                <Button 
-                    type="submit" 
-                    disabled={isSaving} 
+
+                <Button
+                    type="submit"
+                    disabled={isSaving}
                     className="bg-[#D93F21] hover:bg-[#b9351b] h-12 px-8 text-base font-bold shadow-md"
                 >
                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}

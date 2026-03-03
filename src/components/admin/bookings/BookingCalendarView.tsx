@@ -25,11 +25,12 @@ export default function BookingCalendarView({
 }: BookingCalendarViewProps) {
 
     const getStatusBadge = (id: number) => {
-        switch(id) {
-            case 1: return <Badge variant="outline" className="text-yellow-700 bg-yellow-50 border-yellow-200">Pending</Badge>;
-            case 2: return <Badge className="bg-blue-500 hover:bg-blue-600">Verifikasi</Badge>;
-            case 3: return <Badge className="bg-green-600 hover:bg-green-700">OK</Badge>;
-            case 5: return <Badge variant="outline" className="bg-gray-100">Selesai</Badge>;
+        switch (id) {
+            case 1: return <Badge className="bg-blue-500 hover:bg-blue-600">Menunggu</Badge>;
+            case 2: return <Badge className="bg-green-600 hover:bg-green-700">Terkonfirmasi</Badge>;
+            case 3: return <Badge variant="destructive">Dibatalkan</Badge>;
+            case 4: return <Badge variant="outline" className="bg-gray-100">Selesai</Badge>;
+            case 5: return <Badge variant="destructive" className="bg-red-700">Batal Admin</Badge>;
             default: return <Badge variant="secondary">Unknown</Badge>;
         }
     };
@@ -44,7 +45,7 @@ export default function BookingCalendarView({
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                         className="rounded-md border shadow-sm"
-                        disabled={{ before: new Date() }} 
+                        disabled={{ before: new Date() }}
                         modifiers={{
                             booked: bookedDays
                         }}
@@ -73,30 +74,30 @@ export default function BookingCalendarView({
                             {bookingsOnSelectedDate
                                 .sort((a, b) => a.jam_mulai.localeCompare(b.jam_mulai))
                                 .map((booking) => (
-                                <div 
-                                    key={booking.id} 
-                                    className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-[#D93F21]/30 hover:shadow-sm transition-all cursor-pointer bg-white"
-                                    onClick={() => onViewDetail(booking)}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="bg-orange-50 text-[#D93F21] p-2 rounded-md font-mono text-sm font-bold text-center w-24">
-                                            {booking.jam_mulai.substring(0, 5)} <br/> 
-                                            <span className="text-xs font-normal text-gray-500">s/d</span> <br/>
-                                            {booking.jam_selesai.substring(0, 5)}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900">{booking.nama_pengirim || booking.user?.name || 'Tamu'}</p>
-                                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                                                <MapPin className="w-3 h-3" /> {booking.lapangan?.nama_lapangan}
-                                                {booking.acara && <span className="bg-gray-100 px-1.5 rounded">Kegiatan: {booking.acara}</span>}
+                                    <div
+                                        key={booking.id}
+                                        className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-[#D93F21]/30 hover:shadow-sm transition-all cursor-pointer bg-white"
+                                        onClick={() => onViewDetail(booking)}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="bg-orange-50 text-[#D93F21] p-2 rounded-md font-mono text-sm font-bold text-center w-24">
+                                                {booking.jam_mulai.substring(0, 5)} <br />
+                                                <span className="text-xs font-normal text-gray-500">s/d</span> <br />
+                                                {booking.jam_selesai.substring(0, 5)}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-900">{booking.nama_pengirim || booking.user?.name || 'Tamu'}</p>
+                                                <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                                    <MapPin className="w-3 h-3" /> {booking.lapangan?.nama_lapangan}
+                                                    {booking.acara && <span className="bg-gray-100 px-1.5 rounded">Kegiatan: {booking.acara}</span>}
+                                                </div>
                                             </div>
                                         </div>
+                                        <div className="flex items-center gap-3">
+                                            {getStatusBadge(booking.status_booking_id)}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        {getStatusBadge(booking.status_booking_id)}
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     )}
                 </CardContent>

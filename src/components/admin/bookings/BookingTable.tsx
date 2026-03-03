@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-    Eye, CheckCircle, AlertCircle, Ban, Clock, CheckSquare, AlertTriangle, 
+import {
+    Eye, CheckCircle, AlertCircle, Ban, Clock, CheckSquare, AlertTriangle,
     Pencil, Search, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,48 +23,46 @@ interface BookingTableProps {
 export default function BookingTable({ bookings, onView, onEdit, loading }: BookingTableProps) {
     const [searchTerm, setSearchTerm] = useState('');
 
-    const formatDate = (dateString: string) => 
+    const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
     // --- LOGIKA FILTER PENCARIAN ---
     const filteredBookings = bookings.filter((item) => {
         const lowerSearch = searchTerm.toLowerCase();
-        
+
         // 1. Cari Kode Booking
         const matchKode = item.kode_booking.toLowerCase().includes(lowerSearch);
-        
+
         // 2. Cari Nama (User Member atau Pengirim Manual)
         const namaUser = item.user?.name || '';
         const namaPengirim = item.nama_pengirim || '';
-        const matchNama = namaUser.toLowerCase().includes(lowerSearch) || 
-                          namaPengirim.toLowerCase().includes(lowerSearch);
+        const matchNama = namaUser.toLowerCase().includes(lowerSearch) ||
+            namaPengirim.toLowerCase().includes(lowerSearch);
 
         return matchKode || matchNama;
     });
 
     const getStatusBadge = (rawId: number | string) => {
         const id = Number(rawId);
-        switch(id) {
-            case 1: 
-                return <Badge variant="outline" className="text-yellow-700 border-yellow-200 bg-yellow-50 w-full justify-center"><AlertCircle className="w-3 h-3 mr-1"/> Pending</Badge>;
-            case 2: 
-                return <Badge className="bg-blue-500 hover:bg-blue-600 text-white w-full justify-center"><Clock className="w-3 h-3 mr-1"/> Konfirmasi</Badge>;
-            case 3: 
-                return <Badge className="bg-green-600 hover:bg-green-700 text-white w-full justify-center"><CheckCircle className="w-3 h-3 mr-1"/> Lunas</Badge>;
-            case 4: 
-                return <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-white w-full justify-center"><Ban className="w-3 h-3 mr-1"/> Batal</Badge>;
-            case 5: 
-                return <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300 w-full justify-center"><CheckSquare className="w-3 h-3 mr-1"/> Selesai</Badge>;
-            case 6: 
-                return <Badge className="bg-red-700 hover:bg-red-800 text-white w-full justify-center shadow-sm"><AlertTriangle className="w-3 h-3 mr-1"/> Batal Admin</Badge>;
-            default: 
+        switch (id) {
+            case 1:
+                return <Badge className="bg-blue-500 hover:bg-blue-600 text-white w-full justify-center"><Clock className="w-3 h-3 mr-1" /> Menunggu Konfirmasi</Badge>;
+            case 2:
+                return <Badge className="bg-green-600 hover:bg-green-700 text-white w-full justify-center"><CheckCircle className="w-3 h-3 mr-1" /> Terkonfirmasi</Badge>;
+            case 3:
+                return <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-white w-full justify-center"><Ban className="w-3 h-3 mr-1" /> Dibatalkan</Badge>;
+            case 4:
+                return <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300 w-full justify-center"><CheckSquare className="w-3 h-3 mr-1" /> Selesai</Badge>;
+            case 5:
+                return <Badge className="bg-red-700 hover:bg-red-800 text-white w-full justify-center shadow-sm"><AlertTriangle className="w-3 h-3 mr-1" /> Dibatalkan Admin</Badge>;
+            default:
                 return <Badge variant="secondary">ID: {rawId}</Badge>;
         }
     };
 
     return (
         <div className="space-y-4">
-            
+
             {/* --- SEARCH BAR --- */}
             <div className="flex items-center gap-2 max-w-sm">
                 <div className="relative w-full">
@@ -76,7 +74,7 @@ export default function BookingTable({ bookings, onView, onEdit, loading }: Book
                         className="pl-9 bg-white"
                     />
                     {searchTerm && (
-                        <button 
+                        <button
                             onClick={() => setSearchTerm('')}
                             className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
                         >
@@ -89,7 +87,7 @@ export default function BookingTable({ bookings, onView, onEdit, loading }: Book
             {/* --- TABEL --- */}
             <div className="rounded-md border bg-white shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <Table className="min-w-[800px]"> 
+                    <Table className="min-w-[800px]">
                         <TableHeader>
                             <TableRow className="bg-gray-50 hover:bg-gray-50">
                                 <TableHead className="w-12 text-center py-3 px-4 text-xs font-bold text-gray-600 uppercase tracking-wide">No</TableHead>
@@ -148,14 +146,14 @@ export default function BookingTable({ bookings, onView, onEdit, loading }: Book
                                         <TableCell className="py-3 px-4 text-center">
                                             {getStatusBadge(item.status_booking_id)}
                                         </TableCell>
-                                        
+
                                         {/* KOLOM AKSI */}
                                         <TableCell className="text-right py-3 px-4">
                                             <div className="flex justify-end gap-2">
                                                 {/* TOMBOL EDIT / RESCHEDULE */}
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() => onEdit(item)}
                                                     title="Edit / Reschedule"
                                                     className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50 border border-transparent hover:border-orange-200"
@@ -164,10 +162,10 @@ export default function BookingTable({ bookings, onView, onEdit, loading }: Book
                                                 </Button>
 
                                                 {/* TOMBOL DETAIL */}
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
-                                                    onClick={() => onView(item)} 
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => onView(item)}
                                                     className="text-gray-600 border-gray-300 hover:text-blue-600 hover:border-blue-300 h-8"
                                                 >
                                                     <Eye className="w-3.5 h-3.5 mr-1" /> Detail

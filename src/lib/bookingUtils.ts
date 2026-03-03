@@ -5,11 +5,11 @@ import autoTable from 'jspdf-autotable';
 import { Booking } from '@/types';
 
 // Format Rupiah
-export const formatRupiah = (num: number | string) => 
+export const formatRupiah = (num: number | string) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(num));
 
 // Format Tanggal
-export const formatDate = (dateString: string) => 
+export const formatDate = (dateString: string) =>
     format(new Date(dateString), 'EEEE, dd MMMM yyyy', { locale: localeId });
 
 // Hitung durasi booking
@@ -23,11 +23,11 @@ export const calculateDuration = (start: string, end: string) => {
 // Get status badge config
 export const getStatusConfig = (statusId: number) => {
     const statusMap: Record<number, { label: string; bgColor: string; textColor: string; icon: string }> = {
-        1: { label: 'Menunggu Pembayaran', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', icon: 'AlertCircle' },
-        2: { label: 'Menunggu Konfirmasi', bgColor: 'bg-blue-100', textColor: 'text-blue-800', icon: 'Clock' },
-        3: { label: 'Terkonfirmasi', bgColor: 'bg-green-100', textColor: 'text-green-800', icon: 'CheckCircle2' },
-        4: { label: 'Dibatalkan', bgColor: 'bg-red-500', textColor: 'text-white', icon: 'Ban' },
-        5: { label: 'Selesai', bgColor: 'bg-gray-100', textColor: 'text-gray-800', icon: 'CheckCircle2' },
+        1: { label: 'Menunggu Konfirmasi', bgColor: 'bg-blue-100', textColor: 'text-blue-800', icon: 'Clock' },
+        2: { label: 'Terkonfirmasi', bgColor: 'bg-green-100', textColor: 'text-green-800', icon: 'CheckCircle2' },
+        3: { label: 'Dibatalkan', bgColor: 'bg-red-500', textColor: 'text-white', icon: 'Ban' },
+        4: { label: 'Selesai', bgColor: 'bg-gray-100', textColor: 'text-gray-800', icon: 'CheckCircle2' },
+        5: { label: 'Dibatalkan Admin', bgColor: 'bg-red-500', textColor: 'text-white', icon: 'AlertTriangle' },
     };
     return statusMap[statusId] || { label: 'Unknown', bgColor: 'bg-gray-100', textColor: 'text-gray-800', icon: 'HelpCircle' };
 };
@@ -40,7 +40,7 @@ export const downloadTicketPDF = (booking: Booking) => {
     // Header
     doc.setFillColor(217, 63, 33);
     doc.rect(0, 0, 210, 40, 'F');
-    
+
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
@@ -77,6 +77,6 @@ export const downloadTicketPDF = (booking: Booking) => {
     doc.setTextColor(100, 100, 100);
     doc.text('* Tunjukkan tiket ini kepada petugas lapangan.', 14, finalY + 10);
     doc.text('* Harap datang 15 menit sebelum jadwal main.', 14, finalY + 16);
-    
+
     doc.save(`Ticket-${booking.kode_booking}.pdf`);
 };

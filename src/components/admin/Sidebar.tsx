@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import axios from '@/lib/axios'; 
-import { 
+import axios from '@/lib/axios';
+import {
     LayoutDashboard, Users, CalendarDays, Wallet, LogOut, Box,
     Settings, Info, ChevronDown, ChevronRight, PlusCircle, List, HelpCircle, X
 } from 'lucide-react';
@@ -18,7 +18,7 @@ type MenuItem = { title: string; href?: string; icon: any; submenu?: SubMenuItem
 
 const baseMenuItems: MenuItem[] = [
     { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { 
+    {
         title: 'Data Master', icon: Settings,
         submenu: [
             { title: 'Data Lapangan', href: '/admin/lapangan', icon: Box },
@@ -26,7 +26,7 @@ const baseMenuItems: MenuItem[] = [
             { title: 'Status Booking', href: '/admin/master/status-booking', icon: Info },
         ]
     },
-    { 
+    {
         title: 'Booking Lapangan', icon: CalendarDays, href: '/admin/bookings',
         submenu: [
             { title: 'Daftar Booking', href: '/admin/bookings', icon: List, showBadge: true },
@@ -57,7 +57,7 @@ export default function Sidebar() {
         if (result.isConfirmed) logout();
     };
 
-   
+
     // fetch jumlah booking pending setiap kali user tersedia (atau ketika auth selesai)
     // helper untuk mengambil jumlah booking yang menunggu konfirmasi
     const fetchPendingCount = useCallback(async () => {
@@ -67,8 +67,7 @@ export default function Sidebar() {
             const rawData = response.data;
             let bookingsArray: any[] = [];
             if (Array.isArray(rawData)) bookingsArray = rawData;
-            else if (rawData?.data && Array.isArray(rawData.data)) bookingsArray = rawData.data;
-            const count = bookingsArray.filter((b: any) => b?.status_booking_id === 2).length;
+            const count = bookingsArray.filter((b: any) => b?.status_booking_id === 1).length;
             setPendingBookingsCount(count);
         } catch (error) {
             console.error('Failed to fetch pending bookings', error);
@@ -105,7 +104,7 @@ export default function Sidebar() {
     return (
         <>
             {isSidebarOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity"
                     onClick={closeSidebar}
                 />
@@ -130,10 +129,10 @@ export default function Sidebar() {
 
                 <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
                     {baseMenuItems.map((item) => {
-                         let parentBadge = undefined;
-                         if (item.title === 'Booking Lapangan' && pendingBookingsCount > 0 && !expandedMenus.includes(item.title)) {
-                             parentBadge = pendingBookingsCount;
-                         }
+                        let parentBadge = undefined;
+                        if (item.title === 'Booking Lapangan' && pendingBookingsCount > 0 && !expandedMenus.includes(item.title)) {
+                            parentBadge = pendingBookingsCount;
+                        }
 
                         if (!item.submenu) {
                             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -141,9 +140,8 @@ export default function Sidebar() {
                                 <Link
                                     key={item.title}
                                     href={item.href!}
-                                    className={`flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group ${
-                                        isActive ? 'bg-red-50 text-[#D93F21]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
+                                    className={`flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group ${isActive ? 'bg-red-50 text-[#D93F21]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                        }`}
                                 >
                                     <div className="flex items-center">
                                         <item.icon className={`w-5 h-5 mr-3 transition-colors ${isActive ? 'text-[#D93F21]' : 'text-gray-400 group-hover:text-gray-600'}`} />
@@ -160,9 +158,8 @@ export default function Sidebar() {
                             <div key={item.title} className="space-y-1">
                                 <button
                                     onClick={() => toggleMenu(item.title)}
-                                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                                        isParentActive ? 'text-gray-900 bg-gray-50' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
+                                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isParentActive ? 'text-gray-900 bg-gray-50' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                        }`}
                                 >
                                     <div className="flex items-center">
                                         <item.icon className={`w-5 h-5 mr-3 ${isParentActive ? 'text-[#D93F21]' : 'text-gray-400'}`} />
@@ -189,9 +186,8 @@ export default function Sidebar() {
                                                 <Link
                                                     key={subItem.href}
                                                     href={subItem.href}
-                                                    className={`flex items-center justify-between px-4 py-2 text-sm font-medium rounded-lg transition-colors relative z-10 ${
-                                                        isSubActive ? 'text-[#D93F21] bg-red-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                                                    }`}
+                                                    className={`flex items-center justify-between px-4 py-2 text-sm font-medium rounded-lg transition-colors relative z-10 ${isSubActive ? 'text-[#D93F21] bg-red-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                                                        }`}
                                                 >
                                                     <div className="flex items-center">
                                                         {subItem.icon && <subItem.icon className={`w-4 h-4 mr-2 ${isSubActive ? 'text-[#D93F21]' : 'text-gray-400'}`} />}

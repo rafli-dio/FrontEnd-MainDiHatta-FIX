@@ -16,9 +16,9 @@ export function useBookingHistory() {
         setLoading(true);
         try {
             const response = await axios.get('/api/bookings?mode=history');
-            
+
             // 2. DEBUGGING: Cek apa isi response sebenarnya
-            console.log("Cek Respon API:", response.data); 
+            console.log("Cek Respon API:", response.data);
 
             // 3. VALIDASI: Pastikan data yang masuk adalah Array
             if (Array.isArray(response.data)) {
@@ -52,7 +52,7 @@ export function useBookingHistory() {
             const formData = new FormData();
             formData.append('bukti_pembayaran', file);
             await axios.post(`/api/bookings/${bookingId}/payment`, formData);
-            
+
             toast.success("Bukti pembayaran berhasil diupload!");
             await fetchBookings();
             return true;
@@ -80,8 +80,8 @@ export function useBookingHistory() {
 
     const safeBookings = Array.isArray(bookings) ? bookings : [];
 
-    const activeBookings = safeBookings.filter(b => [1, 2, 3].includes(Number(b.status_booking_id)));
-    const historyBookings = safeBookings.filter(b => [4, 5, 6].includes(Number(b.status_booking_id)));
+    const activeBookings = safeBookings.filter(b => [1, 2].includes(Number(b.status_booking_id)));
+    const historyBookings = safeBookings.filter(b => [3, 4, 5].includes(Number(b.status_booking_id)));
     return {
         bookings: safeBookings, // Return yang aman
         activeBookings,

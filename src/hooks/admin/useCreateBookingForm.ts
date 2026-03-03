@@ -16,14 +16,14 @@ export function useCreateBookingForm() {
   const [users, setUsers] = useState<User[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [statuses, setStatuses] = useState<StatusBooking[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]); 
-  
+  const [bookings, setBookings] = useState<Booking[]>([]);
+
   // TAMBAHAN: State untuk Maintenance
-  const [maintenances, setMaintenances] = useState<any[]>([]); 
+  const [maintenances, setMaintenances] = useState<any[]>([]);
 
   const [isManualBooking, setIsManualBooking] = useState(false);
   const [maxDuration, setMaxDuration] = useState(12);
-  
+
   const [jamOperasional, setJamOperasional] = useState({ buka: 6, tutup: 23 });
 
   const [formData, setFormData] = useState<any>({
@@ -52,35 +52,35 @@ export function useCreateBookingForm() {
           axios.get('/api/statusBookings'),
           axios.get('/api/bookings'),
           axios.get('/api/public/maintenances').catch((e) => {
-              console.warn("Gagal fetch maintenance", e);
-              return { data: [] }; 
+            console.warn("Gagal fetch maintenance", e);
+            return { data: [] };
           })
         ]);
 
         // --- Helper Safe Array ---
         const getSafeArray = (res: any) => {
-            const data = res.data?.data || res.data;
-            return Array.isArray(data) ? data : [];
+          const data = res.data?.data || res.data;
+          return Array.isArray(data) ? data : [];
         };
 
         // 1. Lapangan
         const rawLapangans = getSafeArray(resLapangans);
         setLapangans(rawLapangans);
-        
+
         // 2. Users (Filter Pelanggan)
         const safeUsers = getSafeArray(resUsers);
         const pelangganOnly = safeUsers.filter((u: any) => {
-            if (!u) return false;
-            const byId = u.role_id === 2; 
-            const byName = u.role?.name_role?.toLowerCase() === 'pelanggan' || u.role?.name?.toLowerCase() === 'pelanggan';
-            return byId || byName;
+          if (!u) return false;
+          const byId = u.role_id === 2;
+          const byName = u.role?.name_role?.toLowerCase() === 'pelanggan' || u.role?.name?.toLowerCase() === 'pelanggan';
+          return byId || byName;
         });
         setUsers(pelangganOnly);
 
         // 3. Payment Methods
         const safePayments = getSafeArray(resPayments);
         setPaymentMethods(safePayments.filter((p: any) => p?.is_aktif));
-        
+
         // 4. Statuses & Bookings
         setStatuses(getSafeArray(resStatuses));
         setBookings(getSafeArray(resBookings));
@@ -93,10 +93,10 @@ export function useCreateBookingForm() {
           const firstLap = rawLapangans[0];
           setFormData((f: any) => ({ ...f, lapangan_id: String(firstLap.id) }));
           if (firstLap.jam_buka && firstLap.jam_tutup) {
-             setJamOperasional({
-                 buka: parseInt(firstLap.jam_buka.split(':')[0]),
-                 tutup: parseInt(firstLap.jam_tutup.split(':')[0])
-             });
+            setJamOperasional({
+              buka: parseInt(firstLap.jam_buka.split(':')[0]),
+              tutup: parseInt(firstLap.jam_tutup.split(':')[0])
+            });
           }
         }
       } catch (e: any) {
@@ -110,56 +110,56 @@ export function useCreateBookingForm() {
 
   // Update Jam Operasional saat lapangan berubah
   useEffect(() => {
-      const safeLapangans = Array.isArray(lapangans) ? lapangans : [];
-      if (formData.lapangan_id && safeLapangans.length > 0) {
-          const selectedLap = safeLapangans.find(l => String(l.id) === String(formData.lapangan_id));
-          if (selectedLap && selectedLap.jam_buka && selectedLap.jam_tutup) {
-              setJamOperasional({
-                  buka: parseInt(selectedLap.jam_buka.split(':')[0]),
-                  tutup: parseInt(selectedLap.jam_tutup.split(':')[0])
-              });
-          }
+    const safeLapangans = Array.isArray(lapangans) ? lapangans : [];
+    if (formData.lapangan_id && safeLapangans.length > 0) {
+      const selectedLap = safeLapangans.find(l => String(l.id) === String(formData.lapangan_id));
+      if (selectedLap && selectedLap.jam_buka && selectedLap.jam_tutup) {
+        setJamOperasional({
+          buka: parseInt(selectedLap.jam_buka.split(':')[0]),
+          tutup: parseInt(selectedLap.jam_tutup.split(':')[0])
+        });
       }
+    }
   }, [formData.lapangan_id, lapangans]);
 
   // Hitung Max Duration (Defensive)
   useEffect(() => {
-      if (!formData.jam_mulai || !formData.tanggal_booking || !formData.lapangan_id) {
-          setMaxDuration(5); 
-          return;
-      }
+    if (!formData.jam_mulai || !formData.tanggal_booking || !formData.lapangan_id) {
+      setMaxDuration(5);
+      return;
+    }
 
-      const dateStr = format(formData.tanggal_booking, 'yyyy-MM-dd');
-      const currentStartHour = parseInt(formData.jam_mulai.split(':')[0]);
-      const selectedLapId = parseInt(String(formData.lapangan_id));
+    const dateStr = format(formData.tanggal_booking, 'yyyy-MM-dd');
+    const currentStartHour = parseInt(formData.jam_mulai.split(':')[0]);
+    const selectedLapId = parseInt(String(formData.lapangan_id));
 
-      const safeBookings = Array.isArray(bookings) ? bookings : [];
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
 
-      const upcomingBookings = safeBookings
-          .filter(b => 
-              b?.tanggal_booking === dateStr && 
-              b?.status_booking_id !== 4 &&
-              b?.lapangan_id === selectedLapId &&
-              parseInt(b.jam_mulai.split(':')[0]) > currentStartHour
-          )
-          .sort((a, b) => parseInt(a.jam_mulai) - parseInt(b.jam_mulai));
+    const upcomingBookings = safeBookings
+      .filter(b =>
+        b?.tanggal_booking === dateStr &&
+        ![3, 5].includes(b?.status_booking_id) &&
+        b?.lapangan_id === selectedLapId &&
+        parseInt(b.jam_mulai.split(':')[0]) > currentStartHour
+      )
+      .sort((a, b) => parseInt(a.jam_mulai) - parseInt(b.jam_mulai));
 
-      const closingHour = jamOperasional.tutup; 
-      let gap = 0;
+    const closingHour = jamOperasional.tutup;
+    let gap = 0;
 
-      if (upcomingBookings.length > 0) {
-          const nextBookingStart = parseInt(upcomingBookings[0].jam_mulai.split(':')[0]);
-          gap = nextBookingStart - currentStartHour;
-      } else {
-          gap = closingHour - currentStartHour;
-      }
+    if (upcomingBookings.length > 0) {
+      const nextBookingStart = parseInt(upcomingBookings[0].jam_mulai.split(':')[0]);
+      gap = nextBookingStart - currentStartHour;
+    } else {
+      gap = closingHour - currentStartHour;
+    }
 
-      gap = Math.max(1, Math.min(gap, 12));
-      setMaxDuration(gap);
+    gap = Math.max(1, Math.min(gap, 12));
+    setMaxDuration(gap);
 
-      if (parseInt(formData.durasi_jam) > gap) {
-          setFormData((prev: any) => ({ ...prev, durasi_jam: String(gap) }));
-      }
+    if (parseInt(formData.durasi_jam) > gap) {
+      setFormData((prev: any) => ({ ...prev, durasi_jam: String(gap) }));
+    }
 
   }, [formData.jam_mulai, formData.tanggal_booking, formData.lapangan_id, bookings, jamOperasional]);
 
@@ -181,52 +181,52 @@ export function useCreateBookingForm() {
   const getBookedDates = () => {
     const safeBookings = Array.isArray(bookings) ? bookings : [];
     return safeBookings
-        .filter(b => b?.status_booking_id !== 4 && b?.tanggal_booking) 
-        .map(b => new Date(b.tanggal_booking));
+      .filter(b => ![3, 5].includes(b?.status_booking_id) && b?.tanggal_booking)
+      .map(b => new Date(b.tanggal_booking));
   };
 
   const isDateUnderMaintenance = (date: Date) => {
-      if (!maintenances.length) return false;
-      
-      const checkDateStr = format(date, 'yyyy-MM-dd');
-      const selectedLapId = formData.lapangan_id ? parseInt(String(formData.lapangan_id)) : null;
+    if (!maintenances.length) return false;
 
-      return maintenances.some((m: any) => {
-          const isActive = m.is_active === true || m.is_active === 1 || m.is_active === '1';
-          if (!isActive) return false;
-          
-          const appliesToLapangan = !m.lapangan_id || parseInt(String(m.lapangan_id)) === selectedLapId;
+    const checkDateStr = format(date, 'yyyy-MM-dd');
+    const selectedLapId = formData.lapangan_id ? parseInt(String(formData.lapangan_id)) : null;
 
-          if (!appliesToLapangan) return false;
-          const startDate = m.start_date ? String(m.start_date).substring(0, 10) : '';
-          const endDate = m.end_date ? String(m.end_date).substring(0, 10) : '';
+    return maintenances.some((m: any) => {
+      const isActive = m.is_active === true || m.is_active === 1 || m.is_active === '1';
+      if (!isActive) return false;
 
-          // 4. Bandingkan
-          return checkDateStr >= startDate && checkDateStr <= endDate;
-      });
+      const appliesToLapangan = !m.lapangan_id || parseInt(String(m.lapangan_id)) === selectedLapId;
+
+      if (!appliesToLapangan) return false;
+      const startDate = m.start_date ? String(m.start_date).substring(0, 10) : '';
+      const endDate = m.end_date ? String(m.end_date).substring(0, 10) : '';
+
+      // 4. Bandingkan
+      return checkDateStr >= startDate && checkDateStr <= endDate;
+    });
   };
 
   const isTimeSlotBooked = (time: string) => {
-      if (!formData.tanggal_booking || !formData.lapangan_id) return false;
-      const selectedDateStr = format(formData.tanggal_booking, 'yyyy-MM-dd');
-      const selectedLapId = parseInt(String(formData.lapangan_id));
-      const [slotHour] = time.split(':').map(Number);
-      
-      const safeBookings = Array.isArray(bookings) ? bookings : [];
+    if (!formData.tanggal_booking || !formData.lapangan_id) return false;
+    const selectedDateStr = format(formData.tanggal_booking, 'yyyy-MM-dd');
+    const selectedLapId = parseInt(String(formData.lapangan_id));
+    const [slotHour] = time.split(':').map(Number);
 
-      return safeBookings.some(b => {
-          if (!b || !b.tanggal_booking || !b.jam_mulai) return false;
-          if(b.tanggal_booking !== selectedDateStr || b.lapangan_id !== selectedLapId || b.status_booking_id === 4) return false;
-          
-          const [startH] = b.jam_mulai.split(':').map(Number);
-          let endH;
-          if(b.jam_selesai) {
-             endH = parseInt(b.jam_selesai.split(':')[0]);
-          } else {
-             endH = startH + (b.durasi_jam ? Number(b.durasi_jam) : 1);
-          }
-          return slotHour >= startH && slotHour < endH;
-      });
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
+
+    return safeBookings.some(b => {
+      if (!b || !b.tanggal_booking || !b.jam_mulai) return false;
+      if (b.tanggal_booking !== selectedDateStr || b.lapangan_id !== selectedLapId || [3, 5].includes(b.status_booking_id)) return false;
+
+      const [startH] = b.jam_mulai.split(':').map(Number);
+      let endH;
+      if (b.jam_selesai) {
+        endH = parseInt(b.jam_selesai.split(':')[0]);
+      } else {
+        endH = startH + (b.durasi_jam ? Number(b.durasi_jam) : 1);
+      }
+      return slotHour >= startH && slotHour < endH;
+    });
   };
 
   const isTimePassed = (time: string) => {
@@ -241,7 +241,7 @@ export function useCreateBookingForm() {
     if (isToday) {
       const [slotHour] = time.split(':').map(Number);
       const currentHour = now.getHours();
-      return slotHour <= currentHour; 
+      return slotHour <= currentHour;
     }
     return false;
   };
@@ -251,47 +251,47 @@ export function useCreateBookingForm() {
     if (!formData.lapangan_id || !formData.tanggal_booking || !formData.jam_mulai) {
       return toast.error('Isi semua field jadwal (lapangan, tanggal, jam mulai).');
     }
-    
+
     // 2. Validasi User (Manual vs Member)
     if (isManualBooking) {
       if (!formData.nama_pengirim) return toast.error('Isi nama pelanggan untuk booking manual.');
     } else {
       if (!formData.user_id) return toast.error('Pilih member / user untuk booking.');
     }
-    
+
     // 3. Validasi Bentrok
     if (isTimeSlotBooked(formData.jam_mulai)) {
-        return toast.error('Jam yang dipilih sudah terisi. Silakan pilih jam lain.');
+      return toast.error('Jam yang dipilih sudah terisi. Silakan pilih jam lain.');
     }
 
     setIsSaving(true);
-    
+
     try {
       // 4. BUNGKUS SEMUA DATA DALAM FORMDATA (Termasuk File Foto)
       const payload = new FormData();
-      
+
       payload.append('lapangan_id', String(formData.lapangan_id));
       payload.append('tanggal_booking', format(formData.tanggal_booking, 'yyyy-MM-dd'));
       payload.append('jam_mulai', formData.jam_mulai);
       payload.append('durasi_jam', String(formData.durasi_jam || '1'));
-      
+
       if (formData.payment_method_id) payload.append('payment_method_id', String(formData.payment_method_id));
       if (formData.status_booking_id) payload.append('status_booking_id', String(formData.status_booking_id));
       if (formData.acara) payload.append('acara', formData.acara);
       if (formData.asal_bank) payload.append('asal_bank', formData.asal_bank);
       if (isManualBooking && formData.nama_pengirim) {
-          payload.append('nama_pengirim', formData.nama_pengirim);
+        payload.append('nama_pengirim', formData.nama_pengirim);
       } else if (!isManualBooking && formData.user_id) {
-          payload.append('user_id', String(formData.user_id));
+        payload.append('user_id', String(formData.user_id));
       }
 
       if (formData.bukti_pembayaran) {
-          payload.append('bukti_pembayaran', formData.bukti_pembayaran);
+        payload.append('bukti_pembayaran', formData.bukti_pembayaran);
       }
 
       // 5. HIT 1 API SAJA UNTUK SEMUANYA (Create, Upload, & Status)
       const res = await axios.post('/api/bookings', payload, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       const bookingId = res.data?.data?.id || res.data.id;
@@ -303,7 +303,7 @@ export function useCreateBookingForm() {
     } catch (error: any) {
       const status = error.response?.status;
       const data = error.response?.data;
-      
+
       if (status === 422 && data?.errors) {
         const errorsArr = Object.values(data.errors) as string[][];
         const firstErr = errorsArr?.[0]?.[0];
@@ -322,6 +322,6 @@ export function useCreateBookingForm() {
     formData, setFormData,
     getJamSelesai, getEstimasiHarga, handleSubmit,
     getBookedDates, isTimeSlotBooked, maxDuration, isTimePassed, jamOperasional,
-    isDateUnderMaintenance 
+    isDateUnderMaintenance
   };
 }

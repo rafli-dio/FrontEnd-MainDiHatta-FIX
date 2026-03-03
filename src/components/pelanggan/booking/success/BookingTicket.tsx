@@ -51,7 +51,7 @@ export default function BookingTicket({ booking, formatDate }: BookingTicketProp
                         <Clock className="w-5 h-5 text-orange-500 mt-0.5" />
                         <div>
                             <p className="text-xs text-gray-500 font-bold uppercase">Jam Main</p>
-                            <p className="text-sm font-medium text-gray-800">{booking.jam_mulai.substring(0,5)} - {booking.jam_selesai.substring(0,5)}</p>
+                            <p className="text-sm font-medium text-gray-800">{booking.jam_mulai.substring(0, 5)} - {booking.jam_selesai.substring(0, 5)}</p>
                         </div>
                     </div>
                 </div>
@@ -71,9 +71,8 @@ export default function BookingTicket({ booking, formatDate }: BookingTicketProp
 
             <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">Status</span>
-                {booking.status_booking_id === 1 && <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Menunggu Bayar</Badge>}
-                {booking.status_booking_id === 2 && <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Verifikasi Admin</Badge>}
-                {booking.status_booking_id === 3 && <Badge className="bg-green-600 hover:bg-green-700">Terkonfirmasi</Badge>}
+                {booking.status_booking_id === 1 && <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Verifikasi Admin</Badge>}
+                {booking.status_booking_id === 2 && <Badge className="bg-green-600 hover:bg-green-700">Terkonfirmasi</Badge>}
             </div>
         </div>
     );

@@ -32,17 +32,17 @@ export function useBookingAdminPage() {
             const bookingEndString = `${booking.tanggal_booking}T${booking.jam_selesai}`;
             const bookingEndDate = new Date(bookingEndString);
 
-            if (booking.status_booking_id === 3 && now > bookingEndDate) {
+            if (booking.status_booking_id === 2 && now > bookingEndDate) {
                 return {
                     ...booking,
-                    status_booking_id: 5, 
+                    status_booking_id: 4,
                     status_booking: {
-                        ...(booking.status_booking || {}), 
-                        id: 5,
-                        nama_status: 'Selesai', 
+                        ...(booking.status_booking || {}),
+                        id: 4,
+                        nama_status: 'Selesai',
                         color: 'success'
                     }
-                } as Booking; 
+                } as Booking;
             }
             return booking;
         });
@@ -51,7 +51,7 @@ export function useBookingAdminPage() {
     const fetchBookings = useCallback(async () => {
         try {
             const response = await axios.get('/api/bookings');
-            
+
             const rawData = response.data;
             let safeData: any[] = [];
 
@@ -63,20 +63,20 @@ export function useBookingAdminPage() {
                 console.warn("Format data booking tidak valid:", rawData);
                 safeData = [];
             }
-            
+
             const processedData = processAutoFinish(safeData);
             setBookings(processedData);
 
         } catch (error) {
             console.error("Fetch error:", error);
-            setBookings([]); 
+            setBookings([]);
         } finally {
             setLoading(false);
         }
     }, [processAutoFinish]);
 
     useEffect(() => {
-        setLoading(true); 
+        setLoading(true);
         fetchBookings();
 
         const interval = setInterval(fetchBookings, 30000);
@@ -88,22 +88,21 @@ export function useBookingAdminPage() {
 
     const filteredBookings = safeBookings
         .filter(item => {
-            if (!item) return false; 
+            if (!item) return false;
 
             const searchLower = searchQuery.toLowerCase();
-            
-            const matchSearch = 
-                item.kode_booking?.toLowerCase().includes(searchLower) || 
+
+            const matchSearch =
+                item.kode_booking?.toLowerCase().includes(searchLower) ||
                 item.user?.name?.toLowerCase().includes(searchLower) ||
                 (item.nama_pengirim && item.nama_pengirim.toLowerCase().includes(searchLower)) ||
                 false;
-                
+
             const matchStatus = filterStatus === 'all' || item.status_booking_id?.toString() === filterStatus;
-            
-            // Filter by completionStatus
-            const isCompleted = [4, 5, 6].includes(item.status_booking_id);
+
+            const isCompleted = [3, 4, 5].includes(item.status_booking_id);
             const matchCompletion = completionStatus === 'selesai' ? isCompleted : !isCompleted;
-            
+
             return matchSearch && matchStatus && matchCompletion;
         })
         .sort((a, b) => {
@@ -117,14 +116,14 @@ export function useBookingAdminPage() {
             const isFutureA = diffA >= 0;
             const isFutureB = diffB >= 0;
 
-            if (isFutureA && !isFutureB) return -1; 
+            if (isFutureA && !isFutureB) return -1;
             if (!isFutureA && isFutureB) return 1;
 
             if (isFutureA && isFutureB) {
                 return diffA - diffB;
             }
 
-            return diffB - diffA; 
+            return diffB - diffA;
         });
 
     // Pagination Logic
@@ -135,14 +134,14 @@ export function useBookingAdminPage() {
     const currentItems = filteredBookings.slice(indexOfFirstItem, indexOfLastItem);
 
     // Calendar Filter Logic
-    const bookingsOnSelectedDate = safeBookings.filter(b => 
-        selectedDate && 
-        b?.tanggal_booking === format(selectedDate, 'yyyy-MM-dd') && 
-        b?.status_booking_id !== 4 
+    const bookingsOnSelectedDate = safeBookings.filter(b =>
+        selectedDate &&
+        b?.tanggal_booking === format(selectedDate, 'yyyy-MM-dd') &&
+        ![3, 5].includes(b?.status_booking_id)
     );
 
     const bookedDays = safeBookings
-        .filter(b => b?.status_booking_id !== 4 && b?.tanggal_booking)
+        .filter(b => ![3, 5].includes(b?.status_booking_id) && b?.tanggal_booking)
         .map(b => new Date(b.tanggal_booking));
 
     // Handlers
@@ -160,12 +159,12 @@ export function useBookingAdminPage() {
             'Konfirmasi Booking',
             'Apakah Anda yakin ingin mengkonfirmasi booking ini?'
         );
-        
+
         if (!result.isConfirmed) return;
-        
+
         setIsProcessing(true);
         try {
-            await axios.patch(`/api/bookings/${id}/status`, { status_booking_id: 3 });
+            await axios.patch(`/api/bookings/${id}/status`, { status_booking_id: 2 });
             toast.success("Booking berhasil dikonfirmasi!");
 
             setIsDialogOpen(false);
@@ -183,14 +182,14 @@ export function useBookingAdminPage() {
             'Apakah Anda yakin ingin menolak booking ini?',
             'warning'
         );
-        
+
         if (!result.isConfirmed) return;
-        
+
         setIsProcessing(true);
         try {
-            await axios.patch(`/api/bookings/${id}/cancel`); 
+            await axios.patch(`/api/bookings/${id}/cancel`);
             toast.success("Booking dibatalkan.");
-            
+
             setIsDialogOpen(false);
             fetchBookings();
         } catch (error: any) {

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import axios from '@/lib/axios'; 
+import axios from '@/lib/axios';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowRight, Info, Clock, X, AlertTriangle } from 'lucide-react'; 
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowRight, Info, Clock, X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Booking } from '@/types';
 
@@ -14,7 +14,7 @@ interface CalendarSectionProps {
 export default function CalendarSection({ bookings }: CalendarSectionProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
-    
+
     const [maintenanceDates, setMaintenanceDates] = useState<{ from: Date; to: Date; keterangan: string }[]>([]);
 
     const safeBookings = Array.isArray(bookings) ? bookings : [];
@@ -24,11 +24,11 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
             try {
                 const res = await axios.get('/api/public/maintenances');
                 const data = res.data?.data || [];
-                
+
                 const ranges = data.map((m: any) => ({
                     from: new Date(m.start_date),
                     to: new Date(m.end_date),
-                    keterangan: m.keterangan 
+                    keterangan: m.keterangan
                 }));
                 setMaintenanceDates(ranges);
             } catch (error) {
@@ -42,12 +42,12 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
         const year = date.getFullYear();
         const month = date.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const firstDay = new Date(year, month, 1).getDay(); 
+        const firstDay = new Date(year, month, 1).getDay();
         return { daysInMonth, firstDay };
     };
 
     const { daysInMonth, firstDay } = getDaysInMonth(currentDate);
-    
+
     const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
     const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
 
@@ -56,23 +56,24 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
     };
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); 
+    today.setHours(0, 0, 0, 0);
     const todayStr = formatDateKey(today);
 
+
     const getBookingsForDate = (dateString: string) => {
-        return safeBookings.filter(b => b?.tanggal_booking === dateString && b?.status_booking_id !== 4);
+        return safeBookings.filter(b => b?.tanggal_booking === dateString && b?.status_booking_id !== 3);
     };
 
     const checkDateStatus = (day: number) => {
         const dateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        dateObj.setHours(0, 0, 0, 0); 
-        
+        dateObj.setHours(0, 0, 0, 0);
+
         const dateStr = formatDateKey(dateObj);
         const isPast = dateObj < today;
-        
+
         const maintenanceInfo = maintenanceDates.find(range => {
-            const start = new Date(range.from); start.setHours(0,0,0,0);
-            const end = new Date(range.to); end.setHours(23,59,59,999);
+            const start = new Date(range.from); start.setHours(0, 0, 0, 0);
+            const end = new Date(range.to); end.setHours(23, 59, 59, 999);
             return dateObj >= start && dateObj <= end;
         });
 
@@ -87,18 +88,18 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
 
     const handleDateClick = (dateString: string) => {
         if (selectedDate === dateString) {
-            setSelectedDate(null); 
+            setSelectedDate(null);
         } else {
-            setSelectedDate(dateString); 
+            setSelectedDate(dateString);
         }
     };
 
     const selectedDateBookings = selectedDate ? getBookingsForDate(selectedDate) : [];
-    
+
     const selectedDateMaintenance = selectedDate ? maintenanceDates.find(range => {
-        const d = new Date(selectedDate); d.setHours(0,0,0,0);
-        const start = new Date(range.from); start.setHours(0,0,0,0);
-        const end = new Date(range.to); end.setHours(23,59,59,999);
+        const d = new Date(selectedDate); d.setHours(0, 0, 0, 0);
+        const start = new Date(range.from); start.setHours(0, 0, 0, 0);
+        const end = new Date(range.to); end.setHours(23, 59, 59, 999);
         return d >= start && d <= end;
     }) : null;
 
@@ -140,7 +141,7 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                                 </div>
                             ))}
                         </div>
-                        
+
                         <div className="grid grid-cols-7 gap-1.5 sm:gap-2 md:gap-4">
                             {Array.from({ length: firstDay }).map((_, i) => (
                                 <div key={`empty-${i}`} className="h-12 sm:h-14 md:h-24"></div>
@@ -158,18 +159,18 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                                     <button
                                         key={day}
                                         onClick={() => !isPast && handleDateClick(dateString)}
-                                        disabled={isPast} 
+                                        disabled={isPast}
                                         className={`
                                             relative h-12 sm:h-14 md:h-24 rounded-lg sm:rounded-2xl border-2 flex flex-col items-center justify-center transition-all duration-300 group text-center
-                                            ${isPast 
+                                            ${isPast
                                                 ? 'bg-gray-50 border-transparent text-gray-300 cursor-not-allowed'
                                                 : isMaintenance
                                                     ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-80' // Style Maintenance
-                                                : isSelected
-                                                    ? 'bg-[#D93F21] border-[#D93F21] text-white shadow-lg shadow-orange-200 transform scale-105 z-10'
-                                                    : isToday
-                                                        ? 'bg-white border-[#D93F21] text-[#D93F21] shadow-md ring-2 sm:ring-4 ring-orange-50'
-                                                        : 'bg-white border-gray-100 text-gray-700 hover:border-gray-300 hover:shadow-md'
+                                                    : isSelected
+                                                        ? 'bg-[#D93F21] border-[#D93F21] text-white shadow-lg shadow-orange-200 transform scale-105 z-10'
+                                                        : isToday
+                                                            ? 'bg-white border-[#D93F21] text-[#D93F21] shadow-md ring-2 sm:ring-4 ring-orange-50'
+                                                            : 'bg-white border-gray-100 text-gray-700 hover:border-gray-300 hover:shadow-md'
                                             }
                                         `}
                                         title={isMaintenance ? `Tutup: ${maintenanceReason}` : ''}
@@ -177,7 +178,7 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                                         <span className={`text-sm sm:text-lg md:text-2xl ${isSelected || isToday ? 'font-bold' : 'font-medium'} ${isMaintenance ? 'line-through decoration-2' : ''}`}>
                                             {day}
                                         </span>
-                                        
+
                                         {isToday && !isSelected && !isMaintenance && (
                                             <span className="absolute -top-2 sm:-top-3 bg-[#D93F21] text-white text-[8px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-bold shadow-sm">
                                                 HARI INI
@@ -200,12 +201,12 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                             })}
                         </div>
                     </div>
-                    
+
                     {/* Panel Informasi Bawah */}
                     {selectedDate && (
                         <div className="bg-gray-50 p-4 sm:p-6 md:p-8 border-t border-gray-100 animate-in slide-in-from-bottom-6 fade-in duration-500 relative">
-                            
-                            <button 
+
+                            <button
                                 onClick={() => setSelectedDate(null)}
                                 className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors"
                             >
@@ -222,7 +223,7 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                                         <h4 className={`text-lg sm:text-2xl font-extrabold mt-1 capitalize mb-3 ${selectedDateMaintenance ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
                                             {new Date(selectedDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                                         </h4>
-                                        
+
                                         {/* KONDISI TAMPILAN MAINTENANCE VS BOOKING */}
                                         {selectedDateMaintenance ? (
                                             <div className="bg-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-300 text-gray-700 text-xs sm:text-sm flex items-center gap-2">
@@ -254,7 +255,7 @@ export default function CalendarSection({ bookings }: CalendarSectionProps) {
                                         )}
                                     </div>
                                 </div>
-                                
+
                                 {!selectedDateMaintenance && (
                                     <Link href={`/pelanggan/booking/create?date=${selectedDate}`} className="w-full md:w-auto flex-shrink-0">
                                         <Button className="w-full mt-4 md:mt-0 md:w-auto bg-gradient-to-r from-[#D93F21] to-[#FF6B35] hover:from-[#b9351b] hover:to-[#E55A25] text-white px-4 sm:px-8 py-3 sm:py-4 md:py-7 rounded-lg md:rounded-2xl text-base md:text-lg font-bold shadow-md md:shadow-xl shadow-orange-100 md:shadow-orange-200 transition-all hover:scale-105 active:scale-95">

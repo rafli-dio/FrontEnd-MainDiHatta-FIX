@@ -12,8 +12,11 @@ import NotificationDropdown from '@/components/pelanggan/notifications/Notificat
 
 export default function Navbar() {
     const { user, logout, isLoading } = useAuth();
-    const pathname = usePathname(); 
+    const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [imageError, setImageError] = useState(false);
+
+    useEffect(() => { setImageError(false); }, [user?.foto_url]);
 
     const handleLogout = async () => {
         const result = await sweetAlert.confirmLogout();
@@ -36,7 +39,7 @@ export default function Navbar() {
     const isActive = (href: string) => {
         if (!pathname) return false;
         const cleanPathname = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
-        
+
         if (href === '/' || href === '/pelanggan/home') {
             return cleanPathname === href;
         }
@@ -97,18 +100,17 @@ export default function Navbar() {
                                 <Link href="/profile" className="hidden md:block">
                                     <span className="text-sm text-gray-300 hover:text-white transition font-medium flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center border border-gray-600 overflow-hidden">
-                                            {user.foto_url ? (
+                                            {user.foto_url && !imageError ? (
                                                 <img
                                                     src={user.foto_url}
                                                     alt="avatar"
                                                     className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        // jika path rusak, fallback
-                                                        (e.currentTarget as HTMLImageElement).src = '/default-avatar.png';
-                                                    }}
+                                                    onError={() => setImageError(true)}
                                                 />
                                             ) : (
-                                                <User className="w-4 h-4" />
+                                                <span className="text-sm font-bold text-gray-300">
+                                                    {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                                                </span>
                                             )}
                                         </div>
                                         <span className="max-w-[100px] truncate">{user.name.split(' ')[0]}</span>
@@ -133,7 +135,7 @@ export default function Navbar() {
                                     <Menu className="w-6 h-6" />
                                 </Button>
                             </SheetTrigger>
-                            
+
                             <SheetContent side="right" className="w-[280px] bg-[#1a1a1a] text-white border-l border-gray-800/50 p-6">
                                 <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
                                 <div className="flex flex-col h-full mt-6">
@@ -150,8 +152,8 @@ export default function Navbar() {
                                                     href={link.href}
                                                     onClick={closeMobileMenu}
                                                     className={`transition flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium
-                                                        ${active 
-                                                            ? 'bg-[#D93F21]/10 text-[#D93F21] border-l-4 border-[#D93F21]' 
+                                                        ${active
+                                                            ? 'bg-[#D93F21]/10 text-[#D93F21] border-l-4 border-[#D93F21]'
                                                             : 'text-gray-300 hover:text-white hover:bg-white/5'
                                                         }
                                                     `}
@@ -161,33 +163,33 @@ export default function Navbar() {
                                                 </Link>
                                             );
                                         })}
-                                        
-                                   
+
+
                                         {user && (
                                             <Link href="/pelanggan/notifications" onClick={closeMobileMenu} className="transition flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">
                                                 <span>Notifikasi</span>
                                             </Link>
                                         )}
                                     </nav>
-                                    
+
                                     <div className="border-t border-gray-800 pt-6 mt-4">
                                         {isLoading ? (
-                                             <div className="flex justify-center py-2"><Loader2 className="animate-spin w-5 h-5 text-gray-500" /></div>
+                                            <div className="flex justify-center py-2"><Loader2 className="animate-spin w-5 h-5 text-gray-500" /></div>
                                         ) : user ? (
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-3 px-2">
                                                     <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
-                                                        {user.foto_url ? (
+                                                        {user.foto_url && !imageError ? (
                                                             <img
                                                                 src={user.foto_url}
                                                                 alt="avatar"
                                                                 className="w-full h-full object-cover"
-                                                                onError={(e) => {
-                                                                    (e.currentTarget as HTMLImageElement).src = '/default-avatar.png';
-                                                                }}
+                                                                onError={() => setImageError(true)}
                                                             />
                                                         ) : (
-                                                            <User className="w-5 h-5 text-gray-300" />
+                                                            <span className="text-lg font-bold text-gray-300">
+                                                                {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                                                            </span>
                                                         )}
                                                     </div>
                                                     <div>

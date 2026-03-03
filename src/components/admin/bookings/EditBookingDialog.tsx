@@ -9,18 +9,18 @@ import { id as localeId } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 // UI Components
-import { 
-    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription 
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Booking, Lapangan } from '@/types'; 
+import { Booking, Lapangan } from '@/types';
 
 interface EditBookingDialogProps {
     open: boolean;
@@ -29,22 +29,22 @@ interface EditBookingDialogProps {
     onSuccess: () => void;
 }
 
-export default function EditBookingDialog({ 
-    open, 
-    onOpenChange, 
-    booking, 
-    onSuccess 
+export default function EditBookingDialog({
+    open,
+    onOpenChange,
+    booking,
+    onSuccess
 }: EditBookingDialogProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [lapangans, setLapangans] = useState<Lapangan[]>([]);
-    const [allBookings, setAllBookings] = useState<Booking[]>([]); 
-    const [maintenances, setMaintenances] = useState<any[]>([]); 
-    
+    const [allBookings, setAllBookings] = useState<Booking[]>([]);
+    const [maintenances, setMaintenances] = useState<any[]>([]);
+
     const [formData, setFormData] = useState({
         tanggal_booking: '',
         jam_mulai: '',
         durasi_jam: 1,
-        lapangan_id: '' 
+        lapangan_id: ''
     });
 
     useEffect(() => {
@@ -56,7 +56,7 @@ export default function EditBookingDialog({
                     axios.get('/api/bookings'),
                     axios.get('/api/public/maintenances').catch(() => ({ data: [] }))
                 ]);
-                
+
                 const dataLap = resLap.data?.data || resLap.data;
                 if (Array.isArray(dataLap)) setLapangans(dataLap);
 
@@ -90,12 +90,12 @@ export default function EditBookingDialog({
         }
     };
 
-    
-    const bookingsOnDate = allBookings.filter(b => 
-        b.lapangan_id === Number(formData.lapangan_id) && 
+
+    const bookingsOnDate = allBookings.filter(b =>
+        b.lapangan_id === Number(formData.lapangan_id) &&
         b.tanggal_booking === formData.tanggal_booking &&
         b.id !== booking?.id &&
-        ![4, 6].includes(b.status_booking_id) 
+        ![3, 5].includes(b.status_booking_id)
     );
 
     const selectedLapangan = lapangans.find(l => l.id === Number(formData.lapangan_id));
@@ -105,7 +105,7 @@ export default function EditBookingDialog({
     const timeSlots = [];
     for (let i = jamBuka; i < jamTutup; i++) {
         const timeString = `${i.toString().padStart(2, '0')}:00`;
-        
+
         const isBooked = bookingsOnDate.some(b => {
             const startHour = parseInt(b.jam_mulai.substring(0, 2));
             const endHour = parseInt(b.jam_selesai.substring(0, 2));
@@ -137,24 +137,24 @@ export default function EditBookingDialog({
             await axios.put(`/api/bookings/${booking.id}`, {
                 ...formData,
                 durasi_jam: Number(formData.durasi_jam),
-                lapangan_id: Number(formData.lapangan_id) 
+                lapangan_id: Number(formData.lapangan_id)
             });
-            
+
             toast.success("Reschedule Berhasil!", {
                 description: "Jadwal booking telah diperbarui & notifikasi dikirim."
             });
-            
-            onSuccess(); 
-            onOpenChange(false); 
-            
+
+            onSuccess();
+            onOpenChange(false);
+
         } catch (error: any) {
             const msg = error.response?.data?.message || "Gagal update";
             const errors = error.response?.data?.errors;
-            
+
             if (errors?.jam_mulai) {
-                toast.error("Gagal Reschedule", { description: errors.jam_mulai[0] }); 
+                toast.error("Gagal Reschedule", { description: errors.jam_mulai[0] });
             } else if (errors?.tanggal_booking) {
-                toast.error("Gagal Reschedule", { description: errors.tanggal_booking[0] }); 
+                toast.error("Gagal Reschedule", { description: errors.tanggal_booking[0] });
             } else {
                 toast.error("Gagal", { description: msg });
             }
@@ -177,7 +177,7 @@ export default function EditBookingDialog({
                         Ubah jadwal main. Sistem akan mendisable jam yang sudah terbooking.
                     </DialogDescription>
                 </DialogHeader>
-                
+
                 <div className="grid gap-5 py-4">
                     <div className="p-3 bg-gray-50 border rounded-md text-sm text-gray-600 space-y-1">
                         <p><strong>Kode:</strong> {booking.kode_booking}</p>
@@ -239,7 +239,7 @@ export default function EditBookingDialog({
                                 <ul className="text-xs text-orange-700 list-disc list-inside space-y-1">
                                     {bookingsOnDate.map(b => (
                                         <li key={b.id}>
-                                            {b.jam_mulai.substring(0, 5)} - {b.jam_selesai.substring(0, 5)} 
+                                            {b.jam_mulai.substring(0, 5)} - {b.jam_selesai.substring(0, 5)}
                                             <span className="text-orange-500/80 italic ml-1">
                                                 ({b.user?.name || b.nama_pengirim})
                                             </span>
@@ -253,19 +253,19 @@ export default function EditBookingDialog({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label>Jam Mulai</Label>
-                            <Select 
-                                value={formData.jam_mulai} 
-                                onValueChange={(val) => setFormData({...formData, jam_mulai: val})}
+                            <Select
+                                value={formData.jam_mulai}
+                                onValueChange={(val) => setFormData({ ...formData, jam_mulai: val })}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih Jam" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {timeSlots.map((slot) => (
-                                        <SelectItem 
-                                            key={slot.time} 
+                                        <SelectItem
+                                            key={slot.time}
                                             value={slot.time}
-                                            disabled={slot.isBooked} 
+                                            disabled={slot.isBooked}
                                             className={slot.isBooked ? "text-gray-400 bg-gray-50 focus:bg-gray-50 cursor-not-allowed" : ""}
                                         >
                                             {slot.time} {slot.isBooked && '(Penuh)'}
@@ -278,13 +278,13 @@ export default function EditBookingDialog({
                         {/* Input Durasi */}
                         <div className="grid gap-2">
                             <Label htmlFor="durasi">Durasi (Jam)</Label>
-                            <Input 
+                            <Input
                                 id="durasi"
-                                type="number" 
+                                type="number"
                                 min={1}
                                 max={12}
                                 value={formData.durasi_jam}
-                                onChange={(e) => setFormData({...formData, durasi_jam: parseInt(e.target.value)})}
+                                onChange={(e) => setFormData({ ...formData, durasi_jam: parseInt(e.target.value) })}
                                 required
                             />
                         </div>

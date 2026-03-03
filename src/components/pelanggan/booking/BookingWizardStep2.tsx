@@ -6,7 +6,7 @@ import { Calendar as CalendarIcon, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar } from '@/components/ui/calendar'; 
+import { Calendar } from '@/components/ui/calendar';
 import {
     Popover,
     PopoverContent,
@@ -22,32 +22,32 @@ interface BookingWizardStep2Props {
     getJamSelesai: () => string;
     bookings?: Booking[];
     jamOperasional: { buka: number; tutup: number };
-    
+
     // --- PROPS BARU DITAMBAHKAN ---
-    maintenanceDates?: { from: Date; to: Date }[]; 
+    maintenanceDates?: { from: Date; to: Date }[];
     maxDuration?: number;
 }
 
-export default function BookingWizardStep2({ 
-    formData, 
-    setFormData, 
+export default function BookingWizardStep2({
+    formData,
+    setFormData,
     bookedDates = [],
-    getJamSelesai, 
+    getJamSelesai,
     bookings = [],
     jamOperasional = { buka: 8, tutup: 23 },
-    
+
     // --- DEFAULTS ---
     maintenanceDates = [],
     maxDuration = 12
 }: BookingWizardStep2Props) {
-    
+
     const safeBookings = Array.isArray(bookings) ? bookings : [];
     const safeBookedDates = Array.isArray(bookedDates) ? bookedDates : [];
 
     const totalSlots = jamOperasional.tutup - jamOperasional.buka;
-    
+
     const timeSlots = Array.from({ length: totalSlots }, (_, i) => {
-        const hour = i + jamOperasional.buka; 
+        const hour = i + jamOperasional.buka;
         return `${hour.toString().padStart(2, '0')}:00`;
     });
 
@@ -77,10 +77,10 @@ export default function BookingWizardStep2({
         const slotHour = parseInt(time.split(':')[0]);
 
         return safeBookings.some(booking => {
-            if (!booking?.tanggal_booking) return false; 
+            if (!booking?.tanggal_booking) return false;
 
             const bookingDateStr = format(new Date(booking.tanggal_booking), 'yyyy-MM-dd');
-            if (bookingDateStr !== dateStr || booking.status_booking_id === 4) return false;
+            if (bookingDateStr !== dateStr || [3, 5].includes(booking.status_booking_id)) return false;
 
             const startHour = parseInt(booking.jam_mulai.split(':')[0]);
             let endHour: number;
@@ -119,7 +119,7 @@ export default function BookingWizardStep2({
 
     return (
         <div className="space-y-6 max-w-lg animate-in slide-in-from-right-4 duration-300">
-            
+
             <div className="space-y-2">
                 <Label>Tanggal Main</Label>
                 <Popover>
@@ -146,7 +146,7 @@ export default function BookingWizardStep2({
                                 selected={formData.tanggal_booking ? new Date(formData.tanggal_booking) : undefined}
                                 onSelect={handleDateSelect}
                                 initialFocus
-                                
+
                                 // --- VALIDASI TANGGAL ---
                                 disabled={[
                                     // 1. Matikan tanggal lampau
@@ -154,12 +154,12 @@ export default function BookingWizardStep2({
                                     // 2. Matikan tanggal MAINTENANCE (Spread operator array)
                                     ...maintenanceDates
                                 ]}
-                                
-                                modifiers={{ 
-                                    booked: safeBookedDates, 
-                                    maintenance: maintenanceDates 
+
+                                modifiers={{
+                                    booked: safeBookedDates,
+                                    maintenance: maintenanceDates
                                 }}
-                                modifiersStyles={{ 
+                                modifiersStyles={{
                                     booked: { color: '#D93F21', fontWeight: 'bold', textDecoration: 'underline' },
                                     maintenance: { color: '#9CA3AF', textDecoration: 'line-through', opacity: 0.5 }
                                 }}
@@ -172,18 +172,18 @@ export default function BookingWizardStep2({
 
             {/* ALERT MAINTENANCE (Jika user memaksa input manual/bug) */}
             {maintenanceDates.some(range => {
-                 if(!formData.tanggal_booking) return false;
-                 const d = new Date(formData.tanggal_booking);
-                 d.setHours(0,0,0,0);
-                 const start = new Date(range.from); start.setHours(0,0,0,0);
-                 const end = new Date(range.to); end.setHours(23,59,59,999);
-                 return d >= start && d <= end;
+                if (!formData.tanggal_booking) return false;
+                const d = new Date(formData.tanggal_booking);
+                d.setHours(0, 0, 0, 0);
+                const start = new Date(range.from); start.setHours(0, 0, 0, 0);
+                const end = new Date(range.to); end.setHours(23, 59, 59, 999);
+                return d >= start && d <= end;
             }) && (
-                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="font-medium">Maaf, lapangan tutup pada tanggal ini (Maintenance).</span>
-                </div>
-            )}
+                    <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="font-medium">Maaf, lapangan tutup pada tanggal ini (Maintenance).</span>
+                    </div>
+                )}
 
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -199,14 +199,14 @@ export default function BookingWizardStep2({
                         )}
                     </div>
                 </div>
-                
+
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
                     {timeSlots.map((time) => {
                         const passed = isTimePassed(time);
                         const booked = isSlotBooked(time);
                         const disabled = passed || booked;
                         const isSelected = formData.jam_mulai === time;
-                        
+
                         return (
                             <button
                                 key={time}
@@ -215,11 +215,11 @@ export default function BookingWizardStep2({
                                 onClick={() => !disabled && handleTimeSelect(time)}
                                 className={cn(
                                     "py-2 px-1 rounded-lg border text-xs sm:text-sm font-medium transition-all flex flex-col items-center justify-center gap-0.5 min-h-[50px] relative overflow-hidden",
-                                    booked 
+                                    booked
                                         ? "bg-red-50 text-red-300 border-red-100 cursor-not-allowed opacity-70"
-                                        : passed 
+                                        : passed
                                             ? "bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed"
-                                            : isSelected 
+                                            : isSelected
                                                 ? "bg-[#D93F21] border-[#D93F21] text-white shadow-lg ring-2 ring-offset-1 ring-[#D93F21]"
                                                 : "bg-white border-gray-200 text-gray-700 hover:border-[#D93F21] hover:text-[#D93F21] hover:shadow-sm"
                                 )}
@@ -267,10 +267,10 @@ export default function BookingWizardStep2({
                             </span>
                         )}
                     </div>
-                    
-                    <Input 
-                        type="number" 
-                        min="1" 
+
+                    <Input
+                        type="number"
+                        min="1"
                         // --- PAKAI PROPS MAX DURATION ---
                         max={maxDuration}
                         className="bg-white border-gray-300 focus:border-[#D93F21]"
@@ -279,15 +279,15 @@ export default function BookingWizardStep2({
                             const val = parseInt(e.target.value);
                             // Validasi input agar tidak melebihi maxDuration
                             if (val > maxDuration) {
-                                setFormData({...formData, durasi_jam: maxDuration.toString()});
+                                setFormData({ ...formData, durasi_jam: maxDuration.toString() });
                             } else if (val < 1 && e.target.value !== '') {
                                 // jangan update jika < 1
                             } else {
-                                setFormData({...formData, durasi_jam: e.target.value});
+                                setFormData({ ...formData, durasi_jam: e.target.value });
                             }
                         }}
                     />
-                    
+
                     {formData.jam_mulai && maxDuration < 5 && (
                         <p className="text-[10px] text-amber-600 flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" />

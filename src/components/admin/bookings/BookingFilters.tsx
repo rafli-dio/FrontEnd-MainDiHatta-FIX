@@ -45,12 +45,11 @@ export default function BookingFilters({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Semua Status</SelectItem>
-                            <SelectItem value="1">Menunggu Bayar</SelectItem>
-                            <SelectItem value="2">Perlu Konfirmasi</SelectItem>
-                            <SelectItem value="3">Terkonfirmasi</SelectItem>
-                            <SelectItem value="5">Selesai</SelectItem>
-                            <SelectItem value="4">Dibatalkan</SelectItem>
-                            <SelectItem value="6">Batal Admin</SelectItem>
+                            <SelectItem value="1">Perlu Konfirmasi</SelectItem>
+                            <SelectItem value="2">Terkonfirmasi</SelectItem>
+                            <SelectItem value="4">Selesai</SelectItem>
+                            <SelectItem value="3">Dibatalkan</SelectItem>
+                            <SelectItem value="5">Batal Admin</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

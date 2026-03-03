@@ -3,14 +3,14 @@
 import Image from 'next/image';
 import axios from '@/lib/axios';
 import { toast } from 'sonner';
-import { 
-    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter 
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Booking } from '@/types';
-import { 
-    CheckCircle, XCircle, Calendar, Clock, User, CreditCard, MapPin, 
+import {
+    CheckCircle, XCircle, Calendar, Clock, User, CreditCard, MapPin,
     Info, AlertCircle, Ban, CheckSquare, Loader2, Banknote
 } from 'lucide-react';
 import { useState } from 'react';
@@ -22,7 +22,7 @@ interface BookingDetailDialogProps {
     onApprove: (id: number) => void;
     onReject: (id: number) => void;
     isProcessing: boolean;
-    onRefresh?: () => void; 
+    onRefresh?: () => void;
 }
 
 export default function BookingDetailDialog({
@@ -38,10 +38,10 @@ export default function BookingDetailDialog({
 
     if (!booking) return null;
 
-    const formatRupiah = (num: number) => 
+    const formatRupiah = (num: number) =>
         new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-    
-    const formatDate = (dateString: string) => 
+
+    const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
     const handleUpdateStatus = async (statusId: number, successMessage: string) => {
@@ -61,9 +61,9 @@ export default function BookingDetailDialog({
     };
 
     // Helper untuk cek apakah pembayaran tunai/cash
-    const isCashPayment = booking.payment_method?.nama_metode.toLowerCase().includes('cash') || 
-                          booking.payment_method?.nama_metode.toLowerCase().includes('tunai');
-    
+    const isCashPayment = booking.payment_method?.nama_metode.toLowerCase().includes('cash') ||
+        booking.payment_method?.nama_metode.toLowerCase().includes('tunai');
+
     // Helper status ID aman (konversi ke Number)
     const statusId = Number(booking.status_booking_id);
 
@@ -73,38 +73,33 @@ export default function BookingDetailDialog({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3">
                         <span>Booking <span className="font-mono text-gray-500">#{booking.kode_booking}</span></span>
-                        
+
                         {/* BADGE STATUS (Menggunakan statusId yang sudah dikonversi) */}
                         {statusId === 1 && (
-                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                                <AlertCircle className="w-3 h-3 mr-1"/> Menunggu Pembayaran
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                <Clock className="w-3 h-3 mr-1" /> Menunggu Konfirmasi
                             </Badge>
                         )}
                         {statusId === 2 && (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                <Clock className="w-3 h-3 mr-1"/> Menunggu Konfirmasi
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                <CheckCircle className="w-3 h-3 mr-1" /> Terkonfirmasi
                             </Badge>
                         )}
                         {statusId === 3 && (
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                <CheckCircle className="w-3 h-3 mr-1"/> Terkonfirmasi
+                            <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100">
+                                <Ban className="w-3 h-3 mr-1" /> Dibatalkan
                             </Badge>
                         )}
                         {statusId === 4 && (
-                            <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100">
-                                <Ban className="w-3 h-3 mr-1"/> Dibatalkan
-                            </Badge>
-                        )}
-                        {statusId === 5 && (
                             <Badge variant="secondary" className="bg-gray-100 text-gray-600 border-gray-200">
-                                <CheckSquare className="w-3 h-3 mr-1"/> Selesai
+                                <CheckSquare className="w-3 h-3 mr-1" /> Selesai
                             </Badge>
                         )}
                     </DialogTitle>
                 </DialogHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-                    
+
                     {/* KOLOM KIRI: Detail */}
                     <div className="space-y-6">
                         {/* Info Lapangan */}
@@ -134,8 +129,8 @@ export default function BookingDetailDialog({
                             </div>
                         </div>
 
-                         {/* Info Pembayaran */}
-                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-2">
+                        {/* Info Pembayaran */}
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-2">
                             <h4 className="font-bold text-gray-900 flex items-center gap-2">
                                 <CreditCard className="w-4 h-4" /> Pembayaran
                             </h4>
@@ -143,7 +138,7 @@ export default function BookingDetailDialog({
                                 <p><span className="font-medium">Metode:</span> {booking.payment_method?.nama_metode}</p>
                                 <p><span className="font-medium">Total Tagihan:</span> {formatRupiah(Number(booking.total_harga))}</p>
                                 <p><span className="font-medium text-blue-600">DP Masuk:</span> {formatRupiah(Number(booking.jumlah_bayar))}</p>
-                                
+
                                 {(!isCashPayment && (booking.asal_bank || booking.nama_pengirim)) && (
                                     <div className="mt-3 pt-2 border-t border-gray-200">
                                         <p className="text-xs text-gray-500 uppercase font-bold mb-1">Info Transfer</p>
@@ -160,9 +155,9 @@ export default function BookingDetailDialog({
                         <h4 className="font-bold text-gray-900 text-sm">
                             {isCashPayment ? 'Informasi Penerimaan' : 'Bukti Pembayaran'}
                         </h4>
-                        
+
                         <div className={`border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center min-h-[300px] h-full ${isCashPayment ? 'bg-green-50/50 border-green-200' : 'bg-gray-50'}`}>
-                            
+
                             {isCashPayment ? (
                                 <div className="text-center space-y-4">
                                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -182,16 +177,16 @@ export default function BookingDetailDialog({
                             ) : (
                                 booking.bukti_pembayaran_url ? (
                                     <div className="relative w-full h-full min-h-[300px]">
-                                        <Image 
+                                        <Image
                                             src={booking.bukti_pembayaran_url}
                                             alt="Bukti Bayar"
                                             fill
                                             className="object-contain"
                                             unoptimized
                                         />
-                                        <a 
-                                            href={booking.bukti_pembayaran_url} 
-                                            target="_blank" 
+                                        <a
+                                            href={booking.bukti_pembayaran_url}
+                                            target="_blank"
                                             className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded hover:bg-black/70"
                                         >
                                             Lihat Full
@@ -214,42 +209,21 @@ export default function BookingDetailDialog({
                     </Button>
 
                     {/* BUTTON AKSI: Menggunakan statusId (Number) agar aman dari bug String ID */}
-                    
-                    {/* Status 1: Menunggu Pembayaran */}
+
+
+                    {/* Status 1: Menunggu Konfirmasi */}
                     {statusId === 1 && (
                         <>
-                            <Button 
-                                variant="destructive" 
-                                onClick={() => onReject(booking.id)} 
-                                disabled={isProcessing}
-                            >
-                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
-                                Batalkan Booking
-                            </Button>
-                            <Button 
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                                onClick={() => handleUpdateStatus(3, "Pembayaran dikonfirmasi manual.")}
-                                disabled={isUpdatingStatus}
-                            >
-                                {isUpdatingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                                Konfirmasi Pembayaran
-                            </Button>
-                        </>
-                    )}
-
-                    {/* Status 2: Menunggu Konfirmasi */}
-                    {statusId === 2 && (
-                        <>
-                            <Button 
-                                variant="destructive" 
-                                onClick={() => onReject(booking.id)} 
+                            <Button
+                                variant="destructive"
+                                onClick={() => onReject(booking.id)}
                                 disabled={isProcessing}
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
                                 Tolak
                             </Button>
-                            <Button 
-                                className="bg-green-600 hover:bg-green-700" 
+                            <Button
+                                className="bg-green-600 hover:bg-green-700"
                                 onClick={() => onApprove(booking.id)}
                                 disabled={isProcessing}
                             >
@@ -259,20 +233,20 @@ export default function BookingDetailDialog({
                         </>
                     )}
 
-                    {/* Status 3: Terkonfirmasi */}
-                    {statusId === 3 && (
+                    {/* Status 2: Terkonfirmasi */}
+                    {statusId === 2 && (
                         <>
-                            <Button 
-                                variant="destructive" 
-                                onClick={() => onReject(booking.id)} 
+                            <Button
+                                variant="destructive"
+                                onClick={() => onReject(booking.id)}
                                 disabled={isProcessing}
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
                                 Batalkan
                             </Button>
-                            <Button 
+                            <Button
                                 className="bg-gray-800 hover:bg-gray-900 text-white"
-                                onClick={() => handleUpdateStatus(5, "Booking ditandai selesai.")}
+                                onClick={() => handleUpdateStatus(4, "Booking ditandai selesai.")}
                                 disabled={isUpdatingStatus}
                             >
                                 {isUpdatingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckSquare className="w-4 h-4 mr-2" />}
