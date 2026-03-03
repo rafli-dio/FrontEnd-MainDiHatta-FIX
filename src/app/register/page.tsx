@@ -8,11 +8,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from '@/lib/axios';
-import { Toaster } from '@/components/ui/sonner'; 
+import { Toaster } from '@/components/ui/sonner';
 
 export default function RegisterPage() {
     const router = useRouter();
-    
+
     // State Form
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -37,7 +37,7 @@ export default function RegisterPage() {
             if (user.role?.name_role === 'Pelanggan') {
                 router.push('/pelanggan/home');
             } else {
-                router.push('/admin/dashboard'); 
+                router.push('/admin/dashboard');
             }
         }
     }, [user, router, isSuccess]);
@@ -62,19 +62,14 @@ export default function RegisterPage() {
             });
 
             // 3. SUKSES!
-            setIsSuccess(true); 
+            setIsSuccess(true);
             toast.success("Registrasi berhasil! Akun Anda telah dibuat.", {
                 description: "Silakan login untuk melanjutkan.",
                 duration: 5000,
             });
-            
-            // Reset form
-            setName('');
-            setEmail('');
-            setPhone('');
-            setAddress('');
-            setPassword('');
-            setPasswordConfirmation('');
+
+            // Redirect to Login
+            router.push('/login');
 
         } catch (error: any) {
             // 4. Handle Error
@@ -94,7 +89,7 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row">
-            
+
             <Toaster position="top-center" />
 
             <div className="hidden lg:flex w-1/2 relative bg-gray-900">
@@ -110,10 +105,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-y-auto">
-                
+
                 <div className="p-6 md:p-8 sticky top-0 bg-white/80 backdrop-blur-sm z-10">
-                    <Link 
-                        href="/login" 
+                    <Link
+                        href="/login"
                         className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#D93F21] hover:bg-gray-300 text-white transition-colors"
                     >
                         <ArrowLeft size={20} />
@@ -122,7 +117,7 @@ export default function RegisterPage() {
 
                 <div className="flex-1 flex flex-col justify-center px-8 md:px-20 pb-12">
                     <div className="w-full max-w-md mx-auto space-y-8">
-                        
+
                         <div className="text-center">
                             <h2 className="text-2xl font-bold text-gray-900">
                                 Registrasi <span className="text-[#D93F21]">MainDi</span>Hatta.id
@@ -130,7 +125,7 @@ export default function RegisterPage() {
                         </div>
 
                         <form onSubmit={submitForm} className="space-y-5">
-                            
+
                             {/* Nama Lengkap */}
                             <div className="space-y-1">
                                 <input

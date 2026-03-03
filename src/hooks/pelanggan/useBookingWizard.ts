@@ -21,16 +21,16 @@ export function useBookingWizard() {
 
     const urlDate = searchParams.get('date');
     const initialDate = urlDate ? new Date(urlDate) : undefined;
-    
+
     // --- STATE ---
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
-    const [bookedDates, setBookedDates] = useState<Date[]>([]); 
-    const [bookings, setBookings] = useState<Booking[]>([]); 
+
+    const [bookedDates, setBookedDates] = useState<Date[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-    const [lapanganId, setLapanganId] = useState<number | null>(null); 
-    const [hargaPerJam, setHargaPerJam] = useState(0); 
+    const [lapanganId, setLapanganId] = useState<number | null>(null);
+    const [hargaPerJam, setHargaPerJam] = useState(0);
     const [jamOperasional, setJamOperasional] = useState({ buka: 8, tutup: 23 });
 
     const [maintenanceDates, setMaintenanceDates] = useState<MaintenanceRange[]>([]);
@@ -40,13 +40,13 @@ export function useBookingWizard() {
         nama_lengkap: '',
         email: '',
         nomor_telepon: '',
-        nama_club: '', 
-        tanggal_booking: initialDate, 
+        nama_club: '',
+        tanggal_booking: initialDate,
         jam_mulai: '',
         durasi_jam: '1',
         payment_method_id: '',
-        asal_bank: '',      
-        nama_pengirim: '',  
+        asal_bank: '',
+        nama_pengirim: '',
         jumlah_bayar: '',
         bukti_pembayaran: null as File | null,
     });
@@ -69,14 +69,14 @@ export function useBookingWizard() {
             // 1. Lapangan
             const lapData = getSafeArray(resLap);
             if (lapData.length > 0) {
-                const lap = lapData[0]; 
+                const lap = lapData[0];
                 setLapanganId(lap.id);
                 setHargaPerJam(Number(lap.harga_per_jam));
 
                 if (lap.jam_buka && lap.jam_tutup) {
                     setJamOperasional({
-                        buka: parseInt(lap.jam_buka.split(':')[0]), 
-                        tutup: parseInt(lap.jam_tutup.split(':')[0]) 
+                        buka: parseInt(lap.jam_buka.split(':')[0]),
+                        tutup: parseInt(lap.jam_tutup.split(':')[0])
                     });
                 }
             }
@@ -87,33 +87,33 @@ export function useBookingWizard() {
 
             // 3. Bookings
             const bookData = getSafeArray(resBook);
-            
+
             // Filter booking aktif:
             // - Bukan Status 4 (Batal User)
             // - Bukan Status 6 (Dibatalkan Admin/Maintenance) -> Karena slot ini sudah dicover oleh Maintenance Date
-            const activeBookings = bookData.filter((b: Booking) => 
-                b?.status_booking_id !== 4 && 
-                b?.status_booking_id !== 6 && 
+            const activeBookings = bookData.filter((b: Booking) =>
+                b?.status_booking_id !== 3 &&
+                b?.status_booking_id !== 5 &&
                 b?.tanggal_booking
             );
 
             const dates = activeBookings.map((b: Booking) => new Date(b.tanggal_booking));
-            
+
             setBookedDates(dates);
-            setBookings(bookData); 
+            setBookings(bookData);
 
         } catch (error) {
             console.error("Gagal memuat data:", error);
             toast.error("Gagal memuat data booking. Silakan refresh.");
         }
-        
+
         try {
             const resMaint = await axios.get('/api/public/maintenances');
             const maintData = resMaint.data?.data || [];
             const liburRanges = maintData.map((m: any) => ({
                 from: new Date(m.start_date),
                 to: new Date(m.end_date),
-                keterangan: m.keterangan 
+                keterangan: m.keterangan
             }));
             setMaintenanceDates(liburRanges);
         } catch (error) {
@@ -130,51 +130,51 @@ export function useBookingWizard() {
                 nama_lengkap: user.name,
                 email: user.email,
                 nomor_telepon: user.nomor_telepon || '',
-                nama_pengirim: user.name 
+                nama_pengirim: user.name
             }));
         }
         fetchData();
-    }, [user, fetchData]); 
+    }, [user, fetchData]);
 
 
     useEffect(() => {
         if (!formData.jam_mulai || !formData.tanggal_booking || !lapanganId) {
-            setMaxDuration(12); 
+            setMaxDuration(12);
             return;
         }
-    
+
         const dateStr = format(formData.tanggal_booking, 'yyyy-MM-dd');
         const currentStartHour = parseInt(formData.jam_mulai.split(':')[0]);
         const selectedLapId = lapanganId;
-    
+
         const safeBookings = Array.isArray(bookings) ? bookings : [];
         const upcomingBookings = safeBookings
-            .filter(b => 
-                b?.tanggal_booking === dateStr && 
-                b?.status_booking_id !== 4 && 
-                b?.status_booking_id !== 6 && 
+            .filter(b =>
+                b?.tanggal_booking === dateStr &&
+                b?.status_booking_id !== 3 &&
+                b?.status_booking_id !== 5 &&
                 b?.lapangan_id === selectedLapId &&
                 parseInt(b.jam_mulai.split(':')[0]) > currentStartHour
             )
             .sort((a, b) => parseInt(a.jam_mulai) - parseInt(b.jam_mulai));
-    
-        const closingHour = jamOperasional.tutup; 
+
+        const closingHour = jamOperasional.tutup;
         let gap = 0;
-    
+
         if (upcomingBookings.length > 0) {
             const nextBookingStart = parseInt(upcomingBookings[0].jam_mulai.split(':')[0]);
             gap = nextBookingStart - currentStartHour;
         } else {
             gap = closingHour - currentStartHour;
         }
-    
+
         gap = Math.max(1, gap);
         setMaxDuration(gap);
-    
+
         if (parseInt(formData.durasi_jam) > gap) {
             setFormData(prev => ({ ...prev, durasi_jam: String(gap) }));
         }
-    
+
     }, [formData.jam_mulai, formData.tanggal_booking, lapanganId, bookings, jamOperasional]);
 
 
@@ -196,16 +196,16 @@ export function useBookingWizard() {
         if (!formData.tanggal_booking) return false;
 
         const dateStr = format(formData.tanggal_booking, 'yyyy-MM-dd');
-        
+
         const bookingDate = new Date(formData.tanggal_booking);
         bookingDate.setHours(0, 0, 0, 0);
 
         const isMaintenance = maintenanceDates.some(range => {
             const start = new Date(range.from);
             const end = new Date(range.to);
-            start.setHours(0,0,0,0);
-            end.setHours(23,59,59,999);
-            
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+
             return bookingDate >= start && bookingDate <= end;
         });
 
@@ -219,13 +219,13 @@ export function useBookingWizard() {
 
         return safeBookings.some(booking => {
             if (!booking || !booking.tanggal_booking || !booking.jam_mulai) return false;
-            
-            if (booking.tanggal_booking !== dateStr || 
-                booking.status_booking_id === 4 || 
-                booking.status_booking_id === 6) return false;
+
+            if (booking.tanggal_booking !== dateStr ||
+                booking.status_booking_id === 3 ||
+                booking.status_booking_id === 5) return false;
 
             const existingStart = parseInt(booking.jam_mulai.split(':')[0]);
-            
+
             let existingEnd;
             if (booking.jam_selesai) {
                 existingEnd = parseInt(booking.jam_selesai.split(':')[0]);
@@ -244,20 +244,20 @@ export function useBookingWizard() {
             if (!formData.nama_lengkap) return toast.error("Mohon isi Nama Lengkap!");
             if (!formData.nomor_telepon) return toast.error("Mohon isi Nomor WhatsApp!");
         }
-        
+
         if (step === 2) {
             if (!formData.tanggal_booking || !formData.jam_mulai) return toast.error("Pilih jadwal main!");
             if (!lapanganId) return toast.error("Data lapangan belum dimuat. Refresh halaman.");
-            
+
             if (checkConflict()) {
-                return toast.error("Jadwal Tidak Tersedia!", { 
-                    description: "Tanggal sedang tutup (Maintenance) atau jam sudah dibooking." 
+                return toast.error("Jadwal Tidak Tersedia!", {
+                    description: "Tanggal sedang tutup (Maintenance) atau jam sudah dibooking."
                 });
             }
         }
 
         setStep(prev => prev + 1);
-        window.scrollTo(0, 0); 
+        window.scrollTo(0, 0);
     };
 
     const prevStep = () => setStep(prev => prev - 1);
@@ -281,7 +281,7 @@ export function useBookingWizard() {
                 lapangan_id: lapanganId,
                 tanggal_booking: format(formData.tanggal_booking, 'yyyy-MM-dd'),
                 jam_mulai: formData.jam_mulai,
-                durasi_jam: parseInt(formData.durasi_jam), 
+                durasi_jam: parseInt(formData.durasi_jam),
                 payment_method_id: parseInt(formData.payment_method_id),
                 acara: formData.nama_club,
                 asal_bank: formData.asal_bank,
@@ -307,14 +307,14 @@ export function useBookingWizard() {
             const status = error.response?.status;
 
             if (status === 422) {
-                fetchData(); 
+                fetchData();
 
                 if (responseData.errors?.jam_mulai) {
                     toast.error("Jadwal Bentrok!", { description: responseData.errors.jam_mulai[0] });
-                    setStep(2); 
+                    setStep(2);
                 } else if (responseData.errors?.lapangan_id) {
-                      toast.error("Lapangan Error", { description: "Hubungi Admin." });
-                } else if (responseData.errors?.status_booking_id) { 
+                    toast.error("Lapangan Error", { description: "Hubungi Admin." });
+                } else if (responseData.errors?.status_booking_id) {
                     toast.error("Jadwal Tutup", { description: "Lapangan sedang Maintenance." });
                     setStep(2);
                 } else {
@@ -339,7 +339,7 @@ export function useBookingWizard() {
         paymentMethods,
         totalHarga,
         jamOperasional,
-        maintenanceDates, 
+        maintenanceDates,
         maxDuration,
         getJamSelesai,
         nextStep,
