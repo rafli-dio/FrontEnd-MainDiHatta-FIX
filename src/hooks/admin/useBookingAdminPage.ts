@@ -100,7 +100,7 @@ export function useBookingAdminPage() {
 
             const matchStatus = filterStatus === 'all' || item.status_booking_id?.toString() === filterStatus;
 
-            const isCompleted = [3, 4, 5].includes(item.status_booking_id);
+            const isCompleted = [3, 4, 5].includes(Number(item.status_booking_id));
             const matchCompletion = completionStatus === 'selesai' ? isCompleted : !isCompleted;
 
             return matchSearch && matchStatus && matchCompletion;
@@ -138,11 +138,11 @@ export function useBookingAdminPage() {
     const bookingsOnSelectedDate = safeBookings.filter(b =>
         selectedDate &&
         b?.tanggal_booking === format(selectedDate, 'yyyy-MM-dd') &&
-        ![3, 5].includes(b?.status_booking_id)
+        ![3, 5].includes(Number(b?.status_booking_id))
     );
 
     const bookedDays = safeBookings
-        .filter(b => ![3, 5].includes(b?.status_booking_id) && b?.tanggal_booking)
+        .filter(b => ![3, 5].includes(Number(b?.status_booking_id)) && b?.tanggal_booking)
         .map(b => new Date(b.tanggal_booking));
 
     // Handlers
@@ -169,7 +169,8 @@ export function useBookingAdminPage() {
             toast.success("Booking berhasil dikonfirmasi!");
 
             setIsDialogOpen(false);
-            fetchBookings();
+            await fetchBookings();
+            window.dispatchEvent(new Event('bookingsUpdated'));
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Gagal konfirmasi.");
         } finally {
@@ -192,7 +193,8 @@ export function useBookingAdminPage() {
             toast.success("Booking dibatalkan.");
 
             setIsDialogOpen(false);
-            fetchBookings();
+            await fetchBookings();
+            window.dispatchEvent(new Event('bookingsUpdated'));
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Gagal membatalkan.");
         } finally {

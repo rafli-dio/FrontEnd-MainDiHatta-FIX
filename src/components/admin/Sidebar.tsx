@@ -73,7 +73,7 @@ export default function Sidebar() {
                 bookingsArray = rawData.data;
             }
 
-            const count = bookingsArray.filter((b: any) => b?.status_booking_id === 1).length;
+            const count = bookingsArray.filter((b: any) => Number(b?.status_booking_id) === 1).length;
             setPendingBookingsCount(count);
         } catch (error) {
             console.error('Failed to fetch pending bookings', error);
@@ -85,9 +85,18 @@ export default function Sidebar() {
         if (!user || authLoading) return;
         fetchPendingCount();
 
+        // Listener custom event untuk real-time update tanpa refresh
+        const handleBookingsUpdated = () => {
+            fetchPendingCount();
+        };
+        window.addEventListener('bookingsUpdated', handleBookingsUpdated);
+
         // juga sediakan polling agar badge tetap update
         const interval = setInterval(fetchPendingCount, 60000); // tiap menit
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('bookingsUpdated', handleBookingsUpdated);
+        };
     }, [user, authLoading, fetchPendingCount]);
 
     useEffect(() => {
