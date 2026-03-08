@@ -66,7 +66,13 @@ export default function Sidebar() {
             const response = await axios.get('/api/bookings');
             const rawData = response.data;
             let bookingsArray: any[] = [];
-            if (Array.isArray(rawData)) bookingsArray = rawData;
+
+            if (Array.isArray(rawData)) {
+                bookingsArray = rawData;
+            } else if (rawData?.data && Array.isArray(rawData.data)) {
+                bookingsArray = rawData.data;
+            }
+
             const count = bookingsArray.filter((b: any) => b?.status_booking_id === 1).length;
             setPendingBookingsCount(count);
         } catch (error) {
