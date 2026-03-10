@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Loader2, Calendar as CalendarIcon, CreditCard, User, Info, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Calendar as CalendarIcon, CreditCard, User, Info, Image as ImageIcon, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
@@ -366,21 +366,58 @@ export default function CreateBookingForm() {
                     </div>
 
                     {/* INPUT UPLOAD BUKTI */}
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         <Label>Upload Bukti (Opsional)</Label>
-                        <div className="relative">
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                        setFormData({ ...formData, bukti_pembayaran: e.target.files[0] });
-                                    }
-                                }}
-                                className="pl-10 cursor-pointer"
-                            />
-                            <ImageIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Tombol Kamera */}
+                            <Label
+                                htmlFor="upload-camera"
+                                className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors"
+                            >
+                                <Camera className="w-6 h-6 text-gray-400 mb-2" />
+                                <span className="text-xs font-medium text-gray-600">Buka Kamera</span>
+                                <Input
+                                    id="upload-camera"
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setFormData({ ...formData, bukti_pembayaran: e.target.files[0] });
+                                        }
+                                    }}
+                                />
+                            </Label>
+
+                            {/* Tombol Galeri */}
+                            <Label
+                                htmlFor="upload-gallery"
+                                className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors"
+                            >
+                                <ImageIcon className="w-6 h-6 text-gray-400 mb-2" />
+                                <span className="text-xs font-medium text-gray-600">Pilih Media</span>
+                                <Input
+                                    id="upload-gallery"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setFormData({ ...formData, bukti_pembayaran: e.target.files[0] });
+                                        }
+                                    }}
+                                />
+                            </Label>
                         </div>
+
+                        {formData.bukti_pembayaran && (
+                            <div className="text-sm text-green-600 bg-green-50 p-2 rounded-md flex items-center gap-2 mt-2">
+                                <ImageIcon className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">File terpilih: {formData.bukti_pembayaran.name}</span>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
