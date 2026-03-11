@@ -44,6 +44,30 @@ export default function BookingDetailDialog({
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
+    // Helper untuk menghitung durasi jam dari jam_mulai dan jam_selesai
+    const calculateDuration = () => {
+        if (booking.durasi_jam) {
+            return booking.durasi_jam;
+        }
+        
+        // Fallback: hitung dari jam_mulai dan jam_selesai
+        try {
+            const [startHour, startMin] = booking.jam_mulai.split(':').map(Number);
+            const [endHour, endMin] = booking.jam_selesai.split(':').map(Number);
+            
+            let duration = endHour - startHour + (endMin - startMin) / 60;
+            
+            // Handle jika melewati tengah malam
+            if (duration < 0) {
+                duration += 24;
+            }
+            
+            return Math.round(duration * 100) / 100; // Pembulatan 2 desimal
+        } catch {
+            return '-';
+        }
+    };
+
     const handleUpdateStatus = async (statusId: number, successMessage: string) => {
         setIsUpdatingStatus(true);
         try {
@@ -112,7 +136,7 @@ export default function BookingDetailDialog({
                                     <Calendar className="w-3.5 h-3.5" /> {formatDate(booking.tanggal_booking)}
                                 </p>
                                 <p className="flex items-center gap-2">
-                                    <Clock className="w-3.5 h-3.5" /> {booking.jam_mulai} - {booking.jam_selesai} ({booking.durasi_jam} Jam)
+                                    <Clock className="w-3.5 h-3.5" /> {booking.jam_mulai} - {booking.jam_selesai} ({calculateDuration()} Jam)
                                 </p>
                             </div>
                         </div>
@@ -130,21 +154,33 @@ export default function BookingDetailDialog({
                         </div>
 
                         {/* Info Pembayaran */}
-                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-2">
+                        <div className={`p-4 rounded-lg border space-y-2 ${isCashPayment ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'}`}>
                             <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                                <CreditCard className="w-4 h-4" /> Pembayaran
+                                {isCashPayment ? <Banknote className="w-4 h-4 text-green-600" /> : <CreditCard className="w-4 h-4" />} Pembayaran
                             </h4>
                             <div className="text-sm text-gray-600 ml-6 space-y-1">
-                                <p><span className="font-medium">Metode:</span> {booking.payment_method?.nama_metode}</p>
+                                <p><span className="font-medium">Metode:</span> <span className={isCashPayment ? 'text-green-700 font-semibold' : ''}>{booking.payment_method?.nama_metode}</span></p>
                                 <p><span className="font-medium">Total Tagihan:</span> {formatRupiah(Number(booking.total_harga))}</p>
-                                <p><span className="font-medium text-blue-600">DP Masuk:</span> {formatRupiah(Number(booking.jumlah_bayar))}</p>
-
-                                {(!isCashPayment && (booking.asal_bank || booking.nama_pengirim)) && (
-                                    <div className="mt-3 pt-2 border-t border-gray-200">
-                                        <p className="text-xs text-gray-500 uppercase font-bold mb-1">Info Transfer</p>
-                                        <p className="text-xs">Bank Asal: <span className="font-medium text-gray-900">{booking.asal_bank || '-'}</span></p>
-                                        <p className="text-xs">Pengirim: <span className="font-medium text-gray-900">{booking.nama_pengirim || '-'}</span></p>
+                                
+                                {isCashPayment ? (
+                                    <div className="mt-3 pt-3 border-t border-green-200">
+                                        <p className="text-xs text-green-700 uppercase font-bold mb-2">Status Penerimaan</p>
+                                        <p className="text-sm font-semibold text-green-700 flex items-center gap-2">
+                                            <CheckCircle className="w-4 h-4" /> Pembayaran Tunai Diterima
+                                        </p>
+                                        <p className="text-xs text-gray-600 mt-2">Pembayaran diterima secara langsung di lokasi (offline).</p>
                                     </div>
+                                ) : (
+                                    <>
+                                        <p><span className="font-medium text-blue-600">DP Masuk:</span> {formatRupiah(Number(booking.jumlah_bayar))}</p>
+                                        {(booking.asal_bank || booking.nama_pengirim) && (
+                                            <div className="mt-3 pt-2 border-t border-gray-200">
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">Info Transfer</p>
+                                                <p className="text-xs">Bank Asal: <span className="font-medium text-gray-900">{booking.asal_bank || '-'}</span></p>
+                                                <p className="text-xs">Pengirim: <span className="font-medium text-gray-900">{booking.nama_pengirim || '-'}</span></p>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
