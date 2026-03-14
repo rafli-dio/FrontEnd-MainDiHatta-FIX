@@ -3,7 +3,7 @@
 import { Suspense } from 'react'; 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, List, PlusCircle, Loader2 } from 'lucide-react'; 
+import { CheckCircle, List, PlusCircle, Loader2, Printer } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -31,6 +31,15 @@ function SuccessContent() {
                     )}
                 </div>
                 <div className="grid gap-3 pt-4">
+                    {bookingId && (
+                        <Link href={`/admin/bookings/receipt?id=${bookingId}`} className="w-full">
+                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                                <Printer className="w-4 h-4 mr-2" />
+                                Cetak Struk Sekarang
+                            </Button>
+                        </Link>
+                    )}
+
                     <Link href="/admin/bookings" className="w-full">
                         <Button variant="outline" className="w-full border-gray-300">
                             <List className="w-4 h-4 mr-2" />

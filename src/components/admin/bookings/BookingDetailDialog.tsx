@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Booking } from '@/types';
 import {
     CheckCircle, XCircle, Calendar, Clock, User, CreditCard, MapPin,
-    Info, AlertCircle, Ban, CheckSquare, Loader2, Banknote
+    Info, AlertCircle, Ban, CheckSquare, Loader2, Banknote, Printer
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -239,10 +239,22 @@ export default function BookingDetailDialog({
                     </div>
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-0 flex-wrap sm:flex-nowrap">
-                    <Button variant="secondary" onClick={() => onOpenChange(false)}>
-                        Tutup
-                    </Button>
+                <DialogFooter className="gap-2 sm:gap-0 flex-wrap sm:flex-nowrap justify-between w-full">
+                    <div className="flex gap-2">
+                        <Button variant="secondary" onClick={() => onOpenChange(false)}>
+                            Tutup
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="border-[#D93F21] text-[#D93F21] hover:bg-orange-50"
+                            onClick={() => window.open(`/admin/bookings/receipt?id=${booking.id}`, '_blank')}
+                        >
+                            <Printer className="w-4 h-4 mr-2" />
+                            Cetak Struk
+                        </Button>
+                    </div>
+
+                    <div className="flex gap-2">
 
                     {/* BUTTON AKSI: Menggunakan statusId (Number) agar aman dari bug String ID */}
 
@@ -290,6 +302,7 @@ export default function BookingDetailDialog({
                             </Button>
                         </>
                     )}
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
