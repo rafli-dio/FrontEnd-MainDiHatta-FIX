@@ -48,8 +48,25 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: any = {}) => {
             await axios.post('/api/login', props);
             await mutate(); 
         } catch (error: any) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === 422 && error.response.data.errors) {
                 setErrors(error.response.data.errors);
+            } else if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            } else if (error.response?.data?.message) {
+                const msg = error.response.data.message.toLowerCase();
+                if (msg.includes('password') || msg.includes('sandi')) {
+                    setErrors({ password: [error.response.data.message] });
+                } else if (msg.includes('email') || msg.includes('ditemukan') || msg.includes('format')) {
+                    setErrors({ email: [error.response.data.message] });
+                } else {
+                    setErrors({ general: [error.response.data.message] });
+                }
+            } else if (error.response?.data?.error) {
+                setErrors({ general: [error.response.data.error] });
+            } else if (error.response?.status === 401) {
+                setErrors({ general: ['Email atau password salah.'] });
+            } else {
+                setErrors({ general: ['Login gagal. Silakan periksa kembali data Anda.'] });
             }
             throw error;
         }

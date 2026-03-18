@@ -52,7 +52,7 @@ export default function LoginPage() {
             await login({ 
                 email, 
                 password, 
-                setErrors: (errs) => { setErrors(errs); }, 
+                setErrors: (errs: any) => { setErrors(errs); }, 
                 setStatus 
             });
         } catch (error) {
@@ -94,6 +94,11 @@ export default function LoginPage() {
                         {status && (
                             <div className="mt-4 p-3 bg-green-50 text-green-600 text-sm rounded-md animate-in fade-in slide-in-from-top-2">
                                 {status}
+                            </div>
+                        )}
+                        {errors.general && (
+                            <div className="mt-4 p-3 bg-red-50 text-red-600 border border-red-200 text-sm rounded-md animate-in fade-in slide-in-from-top-2 text-left font-medium">
+                                {errors.general[0]}
                             </div>
                         )}
                     </div>
