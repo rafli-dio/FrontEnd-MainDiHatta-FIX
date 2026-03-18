@@ -72,7 +72,11 @@ export function useLapanganPage() {
                 if (formData.foto) {
                     const imgData = new FormData();
                     imgData.append('foto', formData.foto);
-                    await axios.post(`/api/lapangans/${editData.id}/foto`, imgData);
+                    await axios.post(`/api/lapangans/${editData.id}/foto`, imgData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
                 }
                 toast.success("Lapangan diperbarui!");
             } else {
@@ -85,14 +89,30 @@ export function useLapanganPage() {
                     }
                 });
                 
-                await axios.post('/api/lapangans', data);
+                await axios.post('/api/lapangans', data, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
                 toast.success("Lapangan ditambahkan!");
             }
             setIsDialogOpen(false);
             fetchLapangans();
         } catch (error: any) {
             console.error(error);
-            toast.error(error.response?.data?.message || "Gagal menyimpan.");
+            
+            // Extract validation errors from Laravel if present
+            let errorMessage = "Gagal menyimpan.";
+            if (error.response?.data?.errors) {
+                const errors = error.response.data.errors;
+                // Get the first error message from the object
+                const firstErrorKey = Object.keys(errors)[0];
+                errorMessage = errors[firstErrorKey][0];
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+            
+            toast.error(errorMessage);
         }
     };
 
