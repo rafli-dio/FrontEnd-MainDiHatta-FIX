@@ -109,11 +109,18 @@ export default function HeroSection() {
                                     value={selectedDate}
                                     min={todayStr} // PERBAIKAN: min date juga menggunakan local time
                                     onChange={(e) => setSelectedDate(e.target.value)}
+                                    onClick={(e) => {
+                                        try {
+                                            (e.target as HTMLInputElement).showPicker();
+                                        } catch (error) {
+                                            console.error("showPicker not supported", error);
+                                        }
+                                    }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                                 />
                                 
                                 {/* Tampilan Text */}
-                                <span className="font-medium flex-1">
+                                <span className="font-medium flex-1 pointer-events-none">
                                     {selectedDate ? format(new Date(selectedDate), 'dd MMMM yyyy') : 'Pilih Tanggal'}
                                 </span>
                             </div>

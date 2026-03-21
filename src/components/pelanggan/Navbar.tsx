@@ -15,8 +15,12 @@ export default function Navbar() {
     const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [imageError, setImageError] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
-    useEffect(() => { setImageError(false); }, [user?.foto_url]);
+    useEffect(() => { 
+        setImageError(false); 
+        setIsMounted(true);
+    }, [user?.foto_url]);
 
     const handleLogout = async () => {
         const result = await sweetAlert.confirmLogout();
@@ -32,7 +36,7 @@ export default function Navbar() {
         { label: 'Beranda', href: user ? '/pelanggan/home' : '/' },
         { label: 'Tentang', href: '/about' }, // Simplifikasi path
         { label: 'Booking', href: user ? '/pelanggan/booking/create' : '/login' },
-        ...(user ? [{ label: 'Riwayat Booking', href: '/pelanggan/booking/riwayat' }] : []),
+        ...(isMounted && user ? [{ label: 'Riwayat Booking', href: '/pelanggan/booking/riwayat' }] : []),
         { label: 'FAQ', href: '/pelanggan/faq', icon: 'help' },
     ];
 
@@ -86,7 +90,7 @@ export default function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-3 pl-4 border-l border-gray-700">
-                        {isLoading ? (
+                        {!isMounted || isLoading ? (
                             <div className="flex items-center gap-2 text-gray-400 animate-pulse">
                                 <Loader2 className="w-5 h-5 animate-spin text-[#D93F21]" />
                             </div>
@@ -173,7 +177,7 @@ export default function Navbar() {
                                     </nav>
 
                                     <div className="border-t border-gray-800 pt-6 mt-4">
-                                        {isLoading ? (
+                                        {!isMounted || isLoading ? (
                                             <div className="flex justify-center py-2"><Loader2 className="animate-spin w-5 h-5 text-gray-500" /></div>
                                         ) : user ? (
                                             <div className="space-y-4">
