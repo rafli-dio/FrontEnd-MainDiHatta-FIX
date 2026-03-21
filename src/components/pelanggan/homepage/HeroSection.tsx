@@ -24,8 +24,9 @@ export default function HeroSection() {
     return (
         <section className="relative h-[480px] md:h-[700px] flex items-center bg-black overflow-hidden mx-2 sm:mx-4 md:mx-12 mt-4 md:mt-6 rounded-2xl md:rounded-[2.5rem] shadow-2xl group">
             
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0">
+            {/* Background Image & Animated Elements */}
+            <div className="absolute inset-0 z-0 bg-black overflow-hidden">
+                {/* Image */}
                 <Image 
                     src="/images/jumbotron-bg.png" 
                     alt="Hero Basketball"
@@ -33,7 +34,24 @@ export default function HeroSection() {
                     className="object-cover opacity-60 transition-transform duration-[20s] group-hover:scale-110" 
                     priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/30 to-transparent"></div>
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/50 to-black/10 z-10"></div>
+                
+                {/* Animated Glowing Orbs */}
+                <div className="absolute inset-0 z-10 pointer-events-none">
+                    <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[50%] bg-[#D93F21] rounded-full mix-blend-screen blur-[100px] opacity-40 animate-float"></div>
+                    <div className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[60%] bg-[#FF6B35] rounded-full mix-blend-screen blur-[120px] opacity-30 animate-float-delayed"></div>
+                    <div className="absolute top-[40%] left-[50%] w-[30%] h-[40%] bg-orange-400 rounded-full mix-blend-screen blur-[90px] opacity-30 animate-pulse-slow"></div>
+                </div>
+                
+                {/* Floating Particles */}
+                <div className="absolute inset-0 z-10 pointer-events-none">
+                    <div className="absolute top-[20%] left-[15%] w-3 h-3 rounded-full bg-orange-500 opacity-60 blur-[1px] animate-float"></div>
+                    <div className="absolute top-[70%] left-[25%] w-5 h-5 rounded-full bg-[#D93F21] opacity-50 blur-[2px] animate-float-delayed"></div>
+                    <div className="absolute top-[30%] right-[20%] w-4 h-4 rounded-full bg-orange-400 opacity-70 blur-[1px] animate-float" style={{ animationDelay: '1s', animationDuration: '7s' }}></div>
+                    <div className="absolute bottom-[20%] right-[30%] w-2 h-2 rounded-full bg-white opacity-50 blur-[1px] animate-float-delayed" style={{ animationDelay: '3s' }}></div>
+                </div>
             </div>
 
             {/* Content Container */}
