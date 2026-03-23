@@ -44,7 +44,7 @@ export default function Home() {
       {/* Kirim props user ke Navbar jika Navbar butuh info login (opsional) */}
       <Navbar />
 
-      <HeroSection />
+      <HeroSection bookings={bookings} />
       <AboutSection />
       
       {/* Loading state handling (Opsional, agar tidak blank saat fetch) */}

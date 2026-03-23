@@ -6,9 +6,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation'; 
 import { MapPin, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns'; // Pastikan ini terimport
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { Booking } from '@/types';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-export default function HeroSection() {
+interface HeroSectionProps {
+    bookings?: Booking[];
+}
+
+export default function HeroSection({ bookings = [] }: HeroSectionProps) {
     const router = useRouter();
     
     // PERBAIKAN: Gunakan format(new Date(), ...) agar sesuai waktu lokal (WIB/WITA/WIT)
@@ -16,6 +24,17 @@ export default function HeroSection() {
     const todayStr = format(new Date(), 'yyyy-MM-dd');
     
     const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+    // Ambil daftar tanggal yang sudah dibooking (hanya yang belum lewat)
+    const bookedDates = bookings
+        .filter(b => {
+            const bookingDate = new Date(b.tanggal_booking);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return bookingDate >= today;
+        })
+        .map(b => new Date(b.tanggal_booking));
 
     const handleSearchSchedule = () => {
         router.push(`/pelanggan/booking/create?date=${selectedDate}`);
@@ -98,32 +117,42 @@ export default function HeroSection() {
 
                         <div className="space-y-2">
                             <label className="text-xs text-gray-300 uppercase font-bold tracking-wider ml-1">Tanggal Main</label>
-                            <div className="relative bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-4 text-white group hover:border-[#D93F21]/50 transition-colors focus-within:border-[#D93F21]">
-                                <div className="p-2 bg-[#D93F21]/20 rounded-lg group-hover:bg-[#D93F21] transition-colors pointer-events-none z-10">
-                                    <CalendarIcon className="w-5 h-5 text-[#D93F21] group-hover:text-white" />
-                                </div>
-                                
-                                {/* INPUT TANGGAL */}
-                                <input 
-                                    type="date"
-                                    value={selectedDate}
-                                    min={todayStr} // PERBAIKAN: min date juga menggunakan local time
-                                    onChange={(e) => setSelectedDate(e.target.value)}
-                                    onClick={(e) => {
-                                        try {
-                                            (e.target as HTMLInputElement).showPicker();
-                                        } catch (error) {
-                                            console.error("showPicker not supported", error);
-                                        }
-                                    }}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                                />
-                                
-                                {/* Tampilan Text */}
-                                <span className="font-medium flex-1 pointer-events-none">
-                                    {selectedDate ? format(new Date(selectedDate), 'dd MMMM yyyy') : 'Pilih Tanggal'}
-                                </span>
-                            </div>
+                            
+                            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                                <PopoverTrigger asChild>
+                                    <div className="relative bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-4 text-white group hover:border-[#D93F21]/50 transition-colors focus-within:border-[#D93F21] cursor-pointer">
+                                        <div className="p-2 bg-[#D93F21]/20 rounded-lg group-hover:bg-[#D93F21] transition-colors pointer-events-none z-10">
+                                            <CalendarIcon className="w-5 h-5 text-[#D93F21] group-hover:text-white" />
+                                        </div>
+                                        
+                                        {/* Tampilan Text */}
+                                        <span className="font-medium flex-1 pointer-events-none text-left">
+                                            {selectedDate ? format(new Date(selectedDate), 'dd MMMM yyyy', { locale: id }) : 'Pilih Tanggal'}
+                                        </span>
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 z-[100000] border-gray-200 bg-white text-slate-900 drop-shadow-xl" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={selectedDate ? new Date(selectedDate) : undefined}
+                                        onSelect={(date) => {
+                                            if (date) setSelectedDate(format(date, 'yyyy-MM-dd'));
+                                            setIsCalendarOpen(false);
+                                        }}
+                                        disabled={(date) => {
+                                            const today = new Date();
+                                            today.setHours(0, 0, 0, 0);
+                                            return date < today;
+                                        }}
+                                        modifiers={{ booked: bookedDates }}
+                                        modifiersClassNames={{ 
+                                            booked: "font-bold text-[#D93F21]" 
+                                        }}
+                                        initialFocus
+                                        className="bg-white text-slate-900 rounded-xl border border-gray-200"
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                         <div className="pt-2">
