@@ -28,8 +28,6 @@ export interface PaymentMethod {
     id: number;
     nama_metode: string;
     keterangan?: string;
-    icon?: string;
-    icon_url?: string;
     is_aktif: boolean;
 }
 
