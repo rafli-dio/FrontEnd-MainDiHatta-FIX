@@ -179,51 +179,55 @@ export default function RegisterPage() {
                             </div>
 
                             {/* Password */}
-                            <div className="relative space-y-1">
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-5 pr-12 py-3 border border-gray-400 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all"
-                                    placeholder="Password"
-                                    required
-                                    disabled={isSubmitting}
-                                />
+                            <div className="space-y-1">
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full px-5 pr-12 py-3 border border-gray-400 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all"
+                                        placeholder="Password"
+                                        required
+                                        disabled={isSubmitting}
+                                    />
 
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(s => !s)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                    disabled={isSubmitting}
-                                >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(s => !s)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        disabled={isSubmitting}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
 
                                 {errors.password && <p className="text-xs text-red-600 ml-4">{errors.password[0]}</p>}
                             </div>
 
                             {/* Konfirmasi Password */}
-                            <div className="relative space-y-1">
-                                <input
-                                    type={showConfirmPassword ? 'text' : 'password'}
-                                    value={passwordConfirmation}
-                                    onChange={(e) => setPasswordConfirmation(e.target.value)}
-                                    className="w-full px-5 pr-12 py-3 border border-gray-400 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all"
-                                    placeholder="Konfirmasi Password"
-                                    required
-                                    disabled={isSubmitting}
-                                />
+                            <div className="space-y-1">
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={passwordConfirmation}
+                                        onChange={(e) => setPasswordConfirmation(e.target.value)}
+                                        className="w-full px-5 pr-12 py-3 border border-gray-400 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all"
+                                        placeholder="Konfirmasi Password"
+                                        required
+                                        disabled={isSubmitting}
+                                    />
 
-                                <button
-                                    type="button"
-                                    onClick={() => setShowConfirmPassword(s => !s)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                    aria-label={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
-                                    disabled={isSubmitting}
-                                >
-                                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(s => !s)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                        aria-label={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
+                                        disabled={isSubmitting}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Tombol Submit */}

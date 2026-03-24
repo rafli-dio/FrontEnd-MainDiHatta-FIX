@@ -122,27 +122,29 @@ export default function LoginPage() {
                             )}
                         </div>
 
-                        <div className="relative">
-                            <input
-                                id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className={`w-full px-6 pr-12 py-3.5 border rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D93F21] focus:border-transparent transition-all text-sm ${errors.password ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-400'}`}
-                                placeholder="Password"
-                                required
-                                disabled={isLoggingIn} 
-                            />
+                        <div>
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className={`w-full px-6 pr-12 py-3.5 border rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D93F21] focus:border-transparent transition-all text-sm ${errors.password ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-400'}`}
+                                    placeholder="Password"
+                                    required
+                                    disabled={isLoggingIn} 
+                                />
 
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(s => !s)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                disabled={isLoggingIn}
-                            >
-                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                            </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(s => !s)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    disabled={isLoggingIn}
+                                >
+                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
+                            </div>
 
                             {errors.password && (
                                 <p className="mt-1 ml-4 text-xs text-red-600 animate-in slide-in-from-left-1">{errors.password[0]}</p>
