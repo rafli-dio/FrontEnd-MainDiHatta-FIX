@@ -3,8 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 interface ActivityItem {
     id: number;
     keterangan: string;
-    kredit: string;
-    debit: string;
+    kredit?: string | number;
+    debit?: string | number;
+    nominal?: string | number;
+    jenis_transaksi?: {
+        tipe: string;
+    };
     created_at: string;
 }
 
@@ -25,26 +29,31 @@ export default function DashboardRecentActivity({ activities, formatRupiah }: Da
                     {(!activities || activities.length === 0) ? (
                         <p className="text-sm text-gray-500 text-center py-4">Belum ada transaksi.</p>
                     ) : (
-                        activities.map((item) => (
-                            <div key={item.id} className="flex items-center">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium leading-none text-gray-900 line-clamp-1">
-                                        {item.keterangan}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                        {new Date(item.created_at).toLocaleDateString('id-ID', { 
-                                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-                                        })}
-                                    </p>
+                        activities.map((item) => {
+                            const isMasuk = item.jenis_transaksi?.tipe === 'masuk' || Number(item.kredit) > 0;
+                            const nominalValue = item.nominal || (isMasuk ? item.kredit : item.debit) || 0;
+
+                            return (
+                                <div key={item.id} className="flex items-center">
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium leading-none text-gray-900 line-clamp-1">
+                                            {item.keterangan}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {new Date(item.created_at).toLocaleDateString('id-ID', { 
+                                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+                                            })}
+                                        </p>
+                                    </div>
+                                    <div className={`ml-auto font-medium text-sm ${isMasuk ? 'text-green-600' : 'text-red-600'}`}>
+                                        {isMasuk 
+                                            ? `+${formatRupiah(nominalValue)}` 
+                                            : `-${formatRupiah(nominalValue)}`
+                                        }
+                                    </div>
                                 </div>
-                                <div className={`ml-auto font-medium text-sm ${Number(item.kredit) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {Number(item.kredit) > 0 
-                                        ? `+${formatRupiah(item.kredit)}` 
-                                        : `-${formatRupiah(item.debit)}`
-                                    }
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
             </CardContent>

@@ -13,8 +13,12 @@ export interface DashboardData {
     recent_activity: {
         id: number;
         keterangan: string;
-        kredit: string;
-        debit: string;
+        kredit?: string | number;
+        debit?: string | number;
+        nominal?: string | number;
+        jenis_transaksi?: {
+            tipe: string;
+        };
         created_at: string;
     }[];
     chart_data: any; 
@@ -32,12 +36,14 @@ export function useAdminDashboard() {
     const [chartData, setChartData] = useState<ProcessedChartData[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const formatRupiah = (angka: number | string) => {
+    const formatRupiah = (angka: number | string | undefined | null) => {
+        const parsed = Number(angka);
+        const validNumber = isNaN(parsed) ? 0 : parsed;
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
             minimumFractionDigits: 0,
-        }).format(Number(angka));
+        }).format(validNumber);
     };
 
     const processChartData = (apiData: any) => {
