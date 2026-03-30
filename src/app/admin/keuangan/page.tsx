@@ -10,7 +10,6 @@ export default function KeuanganPage() {
     const { 
         filteredTransactions,
         filteredPemasukan,
-        filteredPengeluaran,
         loading,
         filterMode,
         setFilterMode,
@@ -69,7 +68,6 @@ export default function KeuanganPage() {
 
             <KeuanganStatsCards 
                 pemasukan={filteredPemasukan}
-                pengeluaran={filteredPengeluaran}
                 formatRupiah={formatRupiah}
             />
 

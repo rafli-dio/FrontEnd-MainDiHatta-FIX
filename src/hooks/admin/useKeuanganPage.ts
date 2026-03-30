@@ -14,8 +14,10 @@ export interface Transaksi {
     id: number;
     tanggal_transaksi: string;
     keterangan: string;
-    debit: number;   
-    kredit: number; 
+    debit?: number;
+    kredit?: number;
+    nominal?: number;
+    jumlah?: number;
     jenis_transaksi: JenisTransaksi;
 }
 
@@ -70,6 +72,9 @@ export function useKeuanganPage() {
     const filteredTransactions = safeTransactions.filter(item => {
         if (!item || !item.tanggal_transaksi || !item.jenis_transaksi) return false;
 
+        const matchType = item.jenis_transaksi.tipe === 'masuk';
+        if (!matchType) return false;
+
         const trxDate = new Date(item.tanggal_transaksi);
         
         if (filterMode === 'daily') {
@@ -87,8 +92,7 @@ export function useKeuanganPage() {
         }
     });
 
-    const filteredPemasukan = filteredTransactions.reduce((sum, item) => sum + Number(item.kredit || 0), 0);
-    const filteredPengeluaran = filteredTransactions.reduce((sum, item) => sum + Number(item.debit || 0), 0);
+    const filteredPemasukan = filteredTransactions.reduce((sum, item) => sum + Number(item.kredit || item.nominal || item.jumlah || 0), 0);
 
     const formatRupiah = (angka: number) => {
         return new Intl.NumberFormat('id-ID', { 
@@ -116,8 +120,7 @@ export function useKeuanganPage() {
             'Tanggal': item.tanggal_transaksi,
             'Keterangan': item.keterangan,
             'Jenis': item.jenis_transaksi?.nama_jenis || '-',
-            'Pemasukan': Number(item.kredit || 0),
-            'Pengeluaran': Number(item.debit || 0),
+            'Pemasukan': Number(item.kredit || item.nominal || item.jumlah || 0),
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -131,7 +134,6 @@ export function useKeuanganPage() {
         const summaryData = [
             { 'Keterangan': 'Periode', 'Nilai': periodeLabel },
             { 'Keterangan': 'Total Pemasukan', 'Nilai': filteredPemasukan },
-            { 'Keterangan': 'Total Pengeluaran', 'Nilai': filteredPengeluaran },
         ];
         const summarySheet = XLSX.utils.json_to_sheet(summaryData);
         XLSX.utils.book_append_sheet(workbook, summarySheet, "Ringkasan");
@@ -149,7 +151,6 @@ export function useKeuanganPage() {
     return {
         filteredTransactions,
         filteredPemasukan,
-        filteredPengeluaran,
         loading,
         filterMode,
         setFilterMode,
