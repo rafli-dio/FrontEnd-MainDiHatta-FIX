@@ -39,19 +39,20 @@ export default function KeuanganJurnalTable({
                                 <TableHead>Keterangan</TableHead>
                                 <TableHead>Jenis</TableHead>
                                 <TableHead className="text-right text-green-600">Pemasukan</TableHead>
+                                <TableHead className="text-right text-red-600">Pengeluaran</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="h-32 text-center text-gray-500">
+                                    <TableCell colSpan={5} className="h-32 text-center text-gray-500">
                                         <Loader2 className="h-6 w-6 animate-spin inline mr-2 text-gray-400" /> 
                                         <span className="text-sm">Memuat jurnal...</span>
                                     </TableCell>
                                 </TableRow>
                             ) : transactions.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="h-32 text-center text-gray-500">
+                                    <TableCell colSpan={5} className="h-32 text-center text-gray-500">
                                         Tidak ada transaksi pada periode ini.
                                     </TableCell>
                                 </TableRow>
@@ -65,12 +66,19 @@ export default function KeuanganJurnalTable({
                                             {trx.keterangan}
                                         </TableCell>
                                         <TableCell>
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {trx.jenis_transaksi.nama_jenis}
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                trx.jenis_transaksi?.tipe === 'keluar' 
+                                                    ? 'bg-red-100 text-red-800' 
+                                                    : 'bg-green-100 text-green-800'
+                                            }`}>
+                                                {trx.jenis_transaksi?.nama_jenis || '-'}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-right font-mono text-green-700 font-bold">
                                             {Number(trx.kredit) > 0 ? formatRupiah(Number(trx.kredit)) : '-'}
+                                        </TableCell>
+                                        <TableCell className="text-right font-mono text-red-700 font-bold">
+                                            {Number(trx.debit) > 0 ? formatRupiah(Number(trx.debit)) : '-'}
                                         </TableCell>
                                     </TableRow>
                                 ))
