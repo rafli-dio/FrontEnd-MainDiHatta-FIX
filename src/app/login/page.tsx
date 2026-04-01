@@ -28,8 +28,8 @@ export default function LoginPage() {
             const roleName = user.role?.name_role;
             // hanya dua peran sekarang, admin dan pelanggan
             const path = roleName === 'Admin' ? '/admin/dashboard' :
-                         roleName === 'Pelanggan' ? '/pelanggan/home' :
-                         '/';
+                roleName === 'Pelanggan' ? '/pelanggan/home' :
+                    '/';
             try {
                 await router.push(path);
             } finally {
@@ -43,17 +43,17 @@ export default function LoginPage() {
     // Submit Handler
     const submitForm = async (event: FormEvent) => {
         event.preventDefault();
-        
-        setIsLoggingIn(true); 
-        
-        setErrors([]); 
+
+        setIsLoggingIn(true);
+
+        setErrors([]);
 
         try {
-            await login({ 
-                email, 
-                password, 
-                setErrors: (errs: any) => { setErrors(errs); }, 
-                setStatus 
+            await login({
+                email,
+                password,
+                setErrors: (errs: any) => { setErrors(errs); },
+                setStatus
             });
         } catch (error) {
             setIsLoggingIn(false);
@@ -62,7 +62,7 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row">
-            
+
             <div className="relative w-full h-[35vh] lg:hidden rounded-b-[40px] overflow-hidden shadow-xl z-10">
                 <Image
                     src="/images/gambar-login.png"
@@ -86,7 +86,7 @@ export default function LoginPage() {
 
             <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 md:p-16 flex-1">
                 <div className="w-full max-w-md mx-auto space-y-8">
-                    
+
                     <div className="text-center mb-8 mt-4 lg:mt-0">
                         <h2 className="text-3xl font-bold text-gray-900">
                             Login <span className="text-[#D93F21]">MainDi</span>Hatta.id
@@ -104,7 +104,7 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={submitForm} className="space-y-5">
-                        
+
                         <div>
                             <input
                                 id="email"
@@ -115,7 +115,7 @@ export default function LoginPage() {
                                 placeholder="Email"
                                 required
                                 autoFocus
-                                disabled={isLoggingIn} 
+                                disabled={isLoggingIn}
                             />
                             {errors.email && (
                                 <p className="mt-1 ml-4 text-xs text-red-600 animate-in slide-in-from-left-1">{errors.email[0]}</p>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                                     className={`w-full px-6 pr-12 py-3.5 border rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D93F21] focus:border-transparent transition-all text-sm ${errors.password ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-400'}`}
                                     placeholder="Password"
                                     required
-                                    disabled={isLoggingIn} 
+                                    disabled={isLoggingIn}
                                 />
 
                                 <button
@@ -176,7 +176,7 @@ export default function LoginPage() {
                                         Masuk...
                                     </>
                                 ) : (
-                                    'Sing In'
+                                    'Sign In'
                                 )}
                             </button>
                         </div>
