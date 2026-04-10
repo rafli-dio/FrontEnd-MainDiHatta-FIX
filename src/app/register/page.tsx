@@ -155,7 +155,7 @@ export default function RegisterPage() {
                             {/* Nomor Telepon */}
                             <div className="space-y-1">
                                 <input
-                                    type="tel"
+                                    type="number"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     className="w-full px-5 py-3 border border-gray-400 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent transition-all"

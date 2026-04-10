@@ -34,7 +34,11 @@ export default function UsersPage() {
         handleCreate,
         handleEdit,
         handleDelete,
-        handleSubmit
+        handleSubmit,
+        
+        // Validation data
+        currentUser,
+        adminCount
     } = useUsersPage();
 
     return (
@@ -67,6 +71,8 @@ export default function UsersPage() {
             <UserTable 
                 loading={loading}
                 users={users}
+                currentUser={currentUser}
+                adminCount={adminCount}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
             />

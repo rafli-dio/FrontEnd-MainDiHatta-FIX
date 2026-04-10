@@ -5,12 +5,15 @@ import axios from '@/lib/axios';
 import { toast } from 'sonner';
 import { User, Role } from '@/types';
 import { sweetAlert } from '@/lib/sweetAlert';
+import { useAuth } from '@/hooks/useAuth';
 
 export function useUsersPage() {
     // State Data
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const { user: currentUser } = useAuth();
 
     // Filter State
     const [searchQuery, setSearchQuery] = useState('');
@@ -83,7 +86,22 @@ export function useUsersPage() {
         setIsDialogOpen(true);
     };
 
+    // Calculate Admin count for validation
+    const adminCount = safeUsers.filter((u) => u.role?.name_role === 'Admin').length;
+
     const handleDelete = async (id: number) => {
+        const userToDelete = safeUsers.find(u => u.id === id);
+
+        if (userToDelete?.id === currentUser?.id) {
+            toast.error("Anda tidak dapat menghapus akun Anda sendiri.");
+            return;
+        }
+
+        if (userToDelete?.role?.name_role === 'Admin' && adminCount <= 1) {
+            toast.error("Gagal menghapus! Setidaknya harus tersisa satu admin di database.");
+            return;
+        }
+
         const result = await sweetAlert.confirmDelete(
             'Hapus User?',
             'Apakah Anda yakin ingin menghapus user ini?'
@@ -128,6 +146,8 @@ export function useUsersPage() {
         filterRole,
         isDialogOpen,
         editData,
+        currentUser,
+        adminCount,
         setSearchQuery,
         setFilterRole,
         setIsDialogOpen,

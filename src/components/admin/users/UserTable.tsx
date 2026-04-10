@@ -17,6 +17,8 @@ import { sweetAlert } from '@/lib/sweetAlert';
 interface UserTableProps {
     loading: boolean;
     users: User[];
+    currentUser?: User | null;
+    adminCount?: number;
     onEdit: (user: User) => void;
     onDelete: (id: number) => void;
 }
@@ -24,6 +26,8 @@ interface UserTableProps {
 export default function UserTable({
     loading,
     users,
+    currentUser,
+    adminCount = 0,
     onEdit,
     onDelete
 }: UserTableProps) {
@@ -73,30 +77,46 @@ export default function UserTable({
                             </TableCell>
                         </TableRow>
                     ) : (
-                        users.map((item, index) => (
-                            <TableRow key={item.id} className="hover:bg-gray-50">
-                                <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
-                                <TableCell>
-                                    <div className="font-medium text-gray-900">{item.name}</div>
-                                    <div className="text-xs text-gray-500 truncate max-w-[200px]">{item.alamat || '-'}</div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="text-sm text-gray-600">{item.email}</div>
-                                    <div className="text-xs text-gray-500">{item.nomor_telepon || '-'}</div>
-                                </TableCell>
-                                <TableCell>
-                                    {getRoleBadge(item.role?.name_role)}
-                                </TableCell>
-                                <TableCell className="text-right space-x-2">
-                                    <Button variant="ghost" size="icon" onClick={() => onEdit(item)} className="hover:bg-blue-50 hover:text-blue-600">
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)} className="hover:bg-red-50 hover:text-red-600">
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))
+                        users.map((item, index) => {
+                            const isSelf = item.id === currentUser?.id;
+                            const isLastAdmin = item.role?.name_role === 'Admin' && adminCount <= 1;
+                            const disableDelete = isSelf || isLastAdmin;
+                            let disableReason = '';
+                            if (isSelf) disableReason = 'Tidak dapat menghapus akun sendiri';
+                            else if (isLastAdmin) disableReason = 'Tidak dapat menghapus admin terakhir';
+
+                            return (
+                                <TableRow key={item.id} className="hover:bg-gray-50">
+                                    <TableCell className="text-center text-gray-500">{index + 1}</TableCell>
+                                    <TableCell>
+                                        <div className="font-medium text-gray-900">{item.name}</div>
+                                        <div className="text-xs text-gray-500 truncate max-w-[200px]">{item.alamat || '-'}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="text-sm text-gray-600">{item.email}</div>
+                                        <div className="text-xs text-gray-500">{item.nomor_telepon || '-'}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {getRoleBadge(item.role?.name_role)}
+                                    </TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                        <Button variant="ghost" size="icon" onClick={() => onEdit(item)} className="hover:bg-blue-50 hover:text-blue-600">
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => onDelete(item.id)} 
+                                            className="hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                            disabled={disableDelete}
+                                            title={disableReason}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })
                     )}
                 </TableBody>
             </Table>

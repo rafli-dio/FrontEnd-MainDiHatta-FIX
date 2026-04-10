@@ -11,6 +11,7 @@ import { id } from 'date-fns/locale';
 import { Booking } from '@/types';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeroSectionProps {
     bookings?: Booking[];
@@ -18,6 +19,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ bookings = [] }: HeroSectionProps) {
     const router = useRouter();
+    const { user } = useAuth();
     
     // PERBAIKAN: Gunakan format(new Date(), ...) agar sesuai waktu lokal (WIB/WITA/WIT)
     // toISOString() menggunakan UTC, yang bisa menyebabkan tanggal mundur 1 hari jika dibuka pagi hari.
@@ -37,7 +39,11 @@ export default function HeroSection({ bookings = [] }: HeroSectionProps) {
         .map(b => new Date(b.tanggal_booking));
 
     const handleSearchSchedule = () => {
-        router.push(`/pelanggan/booking/create?date=${selectedDate}`);
+        if (user) {
+            router.push(`/pelanggan/booking/create?date=${selectedDate}`);
+        } else {
+            router.push(`/login`);
+        }
     };
 
     return (
@@ -90,7 +96,7 @@ export default function HeroSection({ bookings = [] }: HeroSectionProps) {
                     
                     {/* Mobile CTA Button */}
                     <div className="block lg:hidden w-full pt-4">
-                        <Link href="/pelanggan/booking/create">
+                        <Link href={user ? "/pelanggan/booking/create" : "/login"}>
                             <Button className="w-full bg-gradient-to-r from-[#D93F21] to-[#FF6B35] hover:from-[#b9351b] hover:to-[#E55A25] h-12 rounded-xl font-bold text-white text-base shadow-lg">
                                 Mulai Booking <ArrowRight className="ml-2 w-4 h-4" />
                             </Button>
