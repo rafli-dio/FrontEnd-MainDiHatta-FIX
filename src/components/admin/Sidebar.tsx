@@ -34,7 +34,7 @@ const baseMenuItems: MenuItem[] = [
         ]
     },
     { title: 'Manajemen Users', href: '/admin/users', icon: Users },
-    { title: 'Laporan Keuangan', href: '/admin/keuangan', icon: Wallet },
+    { title: 'Laporan Transaksi', href: '/admin/keuangan', icon: Wallet },
     { title: 'Manajemen FAQ', href: '/admin/faq', icon: HelpCircle },
 ];
 
