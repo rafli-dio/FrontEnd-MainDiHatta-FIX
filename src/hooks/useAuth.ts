@@ -97,6 +97,45 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: any = {}) => {
         }
     };
 
+    const forgotPassword = async ({ setErrors, setStatus, email }: any) => {
+        await csrf();
+        setErrors([]);
+        setStatus?.(null);
+
+        try {
+            const response = await axios.post('/api/forgot-password', { email });
+            setStatus?.(response.data.message);
+            return response.data;
+        } catch (error: any) {
+            if (error.response?.status === 422 && error.response.data.errors) {
+                setErrors(error.response.data.errors);
+            } else if (error.response?.data?.message) {
+                setErrors({ email: [error.response.data.message] });
+            }
+            throw error;
+        }
+    };
+
+    const resetPassword = async ({ setErrors, setStatus, ...props }: any) => {
+        await csrf();
+        setErrors([]);
+        setStatus?.(null);
+
+        try {
+            const response = await axios.post('/api/reset-password', props);
+            setStatus?.(response.data.message);
+            return response.data;
+        } catch (error: any) {
+            if (error.response?.status === 422 && error.response.data.errors) {
+                setErrors(error.response.data.errors);
+            } else if (error.response?.data?.message) {
+                setErrors({ general: [error.response.data.message] });
+            }
+            throw error;
+        }
+    };
+
+
     useEffect(() => {
         if (isLoading) return;
 
@@ -116,6 +155,8 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: any = {}) => {
         user,
         login,
         register,
+        forgotPassword,
+        resetPassword,
         logout,
         mutate,
         isLoading,

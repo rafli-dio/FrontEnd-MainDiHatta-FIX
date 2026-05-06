@@ -164,6 +164,12 @@ export default function LoginPage() {
                             </label>
                         </div> */}
 
+                        <div className="flex justify-end pt-1 pb-1">
+                            <Link href="/forgot-password" className={`text-sm font-semibold text-[#D93F21] hover:underline ${isLoggingIn ? 'pointer-events-none opacity-50' : ''}`}>
+                                Forgot password?
+                            </Link>
+                        </div>
+
                         <div className="pt-2">
                             <button
                                 type="submit"
